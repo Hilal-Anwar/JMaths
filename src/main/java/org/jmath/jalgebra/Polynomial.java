@@ -23,7 +23,7 @@ public class Polynomial {
         if (exp.charAt(0) == '-')
             memory[0] = "-" + memory[0];
         solve();
-
+        sortPolynomial();
     }
     private String substitute(String va) {
         var val = (va.charAt(0) == '-') ? va.substring(1) : va;
@@ -159,9 +159,6 @@ public class Polynomial {
     }
 
     String getFinalExpression() {
-        sortPolynomial();
-        if (!polynomial.isEmpty()&&!polynomial.get(polynomial.size() - 1).variables().isEmpty())
-            degree = polynomial.get(polynomial.size() - 1).variables().get(polynomial.get(polynomial.size() - 1).variables().lastKey());
         String x = IntStream.iterate(polynomial.size() - 1, i -> i >= 0, i -> i - 1).
                 mapToObj(i -> polynomial.get(i).getMonomial() + "+").collect(Collectors.joining());
         x = x.replace("-+", "-").replace("++", "+").replace("+-", "-");
@@ -175,18 +172,24 @@ public class Polynomial {
                 collect(Collectors.toCollection(HashSet::new));
         return hasSet.size();
     }
-
     boolean isPolynomial() {
         return polynomial.stream().map(y -> y.variables().values()).flatMap(Collection::stream).
                 findFirst().map(j -> !(j < 0)).orElse(true);
     }
 
     double getDegree() {
+        if (!polynomial.isEmpty()&&!polynomial.get(polynomial.size() - 1).variables().isEmpty())
+            degree = new TreeSet<>(polynomial.get(polynomial.size() - 1).variables().values()).last();
         return degree;
     }
 
-    private void sortPolynomial() {
-        polynomial.sort(Comparator.comparingDouble(i -> !i.variables().isEmpty() ? i.variables().get(i.variables().firstKey()) : Double.valueOf(0.0)));
+    void sortPolynomial() {
+        polynomial.sort(Comparator.comparingDouble(i -> {
+            var x=new TreeSet<>(i.variables().values());
+            if (!x.isEmpty())
+                return x.last();
+        else return 0.0;
+        }));
     }
 
     EquationType getEquationType() {
@@ -196,4 +199,5 @@ public class Polynomial {
             default -> EquationType.UNKNOWN;
         };
     }
+
 }

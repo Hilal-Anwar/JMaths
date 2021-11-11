@@ -8,4 +8,5 @@ module cal
     opens org.jmath.jnum;
     opens org.jmath.jalgebra;
     opens org.jmath.jconvert.currency;
+    opens org.jmath.number;
 }

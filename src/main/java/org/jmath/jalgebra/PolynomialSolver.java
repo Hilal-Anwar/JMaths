@@ -8,12 +8,12 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class PolynomialSolver {
-    private final TreeMap<String, String> memory = new TreeMap<>();
-    private ArrayList<Monomial> polynomial;
+    private TreeMap<String, String> memory = new TreeMap<>();
+    private ArrayList<Monomial> monomials_list;
     private EquationType equationType;
     private boolean isPolynomial;
     private double polynomialDegree;
-    private int t = 200;
+    private int KEYS = 200;
     private String exp;
 
     public PolynomialSolver(String exp) {
@@ -21,14 +21,22 @@ public class PolynomialSolver {
         this.exp = format(add_or_remove_parenthesis(exp));
     }
 
-    public ArrayList<Monomial> getPolynomial() {
-        return polynomial;
+    public PolynomialSolver(String exp,TreeMap<String, String> memory) {
+        this.exp = exp;
+        this.memory=memory;
+        this.exp = format(add_or_remove_parenthesis(exp));
     }
 
+    public ArrayList<Monomial> getMonomialList() {
+        return monomials_list;
+    }
+    public boolean isMonomial(){
+        return monomials_list.size()==1;
+    }
     public String simplify() throws DomainException {
         var x = solve_parenthesis(exp);
         x = values(x);
-        if (x.contains("/")) {
+        if ((!x.contains("[") && !x.contains("]")) && x.contains("/")) {
             String N, D;
             N = x.substring(0, x.indexOf('/'));
             D = x.substring(x.indexOf('/') + 1);
@@ -36,18 +44,17 @@ public class PolynomialSolver {
             D = memory.getOrDefault(D, D);
             var a = new Polynomial(N);
             var b = new Polynomial(D);
-            N = a.getFinalExpression();
-            D = b.getFinalExpression();
-            return N + "/" + D;
-        } else {
+            return a.getFinalExpression() + "/" + b.getFinalExpression();
+        } else if ((!x.contains("[") && !x.contains("]"))) {
             var a = new Polynomial(values(x));
             var r = a.getFinalExpression();
-            polynomial = a.getPolynomial();
+            monomials_list = a.getPolynomial();
             isPolynomial = a.isPolynomial();
             equationType = a.getEquationType();
             polynomialDegree = a.getDegree();
             return r;
         }
+        return x;
     }
 
     private String format(String exp) {
@@ -75,9 +82,13 @@ public class PolynomialSolver {
             end = exp.indexOf(')', exp.lastIndexOf('('));
             String x = exp.substring(start, end + 1);
             String val = exp.substring(start + 1, end);
-            if (isValidExpression(val)||val.contains("/")) {
+            if ((!val.contains("[")) && (isValidExpression(val) || val.contains("/") || (start != 0 && exp.charAt(start - 1) == '^'))) {
                 var y = getIndexes(val);
-                if (val.contains("^") && y != 0)
+                if (start != 0 && exp.charAt(start - 1) == '^') {
+                    var an = new PolynomialSolver(val,memory).simplify();
+                    System.out.println(memory);
+                    exp = isNumber(an) ? exp.replace(x, an) : exp.replace(x, "[" + an + "]");
+                } else if (val.contains("^") && y != 0)
                     exp = exp.replace(val, exponent(val, y));
                 else if (val.contains("/")) {
                     var N_D = formatIt(val);
@@ -93,7 +104,9 @@ public class PolynomialSolver {
                         key_D = "" + getCharKey();
                         memory.put(key_D, D);
                     } else key_D = D;
-                    exp = exp.replace(x, key_N + "/" + key_D);
+                    if (start != 0 && exp.charAt(start - 1) == '/')
+                        exp = exp.replace(x, key_N + "*" + key_D);
+                    else exp = exp.replace(x, key_N + "/" + key_D);
                 } else if (val.contains("*")) {
                     var z = ((val.charAt(0) == '-') ? val.substring(1) : val);
                     z = z.replace("-", "+-");
@@ -114,8 +127,18 @@ public class PolynomialSolver {
                 memory.put(key, val);
                 exp = exp.replace(x, key);
             }
+            System.out.println(memory);
         }
         return exp;
+    }
+
+    private boolean isNumber(String an) {
+        try {
+            Double.parseDouble(an);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private String exponent(String x, int y) throws DomainException {
@@ -130,6 +153,7 @@ public class PolynomialSolver {
                 va = pow(values("" + x.charAt(y - 1)), Integer.parseInt(pr));
                 x = x.replace(x.charAt(y - 1) + "^" + pr, "(" + va + ")");
             }
+
         }
         return x;
     }
@@ -166,13 +190,13 @@ public class PolynomialSolver {
                 for (var y = 1; y < x.length; y++) {
                     var w = (memory.containsKey(x[y])) ? values(x[y]) : x[y];
                     if (y == 1) {
-                        k = multiply((memory.containsKey(x[0]) ? values(x[0]) : x[0]), w) + "+";
-                    } else k = multiply(k, w);
+                        k = Product.multiply((memory.containsKey(x[0]) ? values(x[0]) : x[0]), w) + "+";
+                    } else k = Product.multiply(k, w);
                 }
                 i.append("+").append(k);
             }
         }
-        i = new StringBuilder(i.toString().replace("-+", "-").replace("+-", "-").replace("++", "+"));
+        i = new StringBuilder(check_for_sign(i.toString()));
         return (i.charAt(i.length() - 1) == '+') ? i.substring(0, i.length() - 1) : i.toString();
     }
 
@@ -183,7 +207,7 @@ public class PolynomialSolver {
         return val;
     }
 
-    private Product formatIt(String val) {
+    private AlgebraicFraction formatIt(String val) {
         var z = ((val.charAt(0) == '-') ? val.substring(1) : val);
         z = z.replace("/-", "" + (char) 195);
         z = z.replace("-", "+-");
@@ -191,7 +215,8 @@ public class PolynomialSolver {
         var m1 = arrange(new ArrayList<>(List.of(z.split("\\+"))));
         if (val.charAt(0) == '-')
             m1.set(0, "-" + m1.get(0));
-        String init = m1.stream().filter(s -> s.contains("/")).map(s -> (s.replace("" + (char) 197, "^-").replace("" + (char) 195, "/-"))
+        String init = m1.stream().filter(s -> s.contains("/")).map(s ->
+                        (s.replace("" + (char) 197, "^-").replace("" + (char) 195, "/-"))
                         .substring(s.indexOf("/") + 1) + "*").
                 collect(Collectors.joining());
         init = init.substring(0, init.length() - 1);
@@ -199,14 +224,14 @@ public class PolynomialSolver {
             String y = m1.get(i);
             if (y.contains("/")) {
                 String x = y.substring(y.indexOf("/") + 1);
-                y = y.replace("/" + x, ("*" + init.replace(x, "")).replace("**", "*"));
+                y = y.replace("/" + x, ("*" + init.replaceFirst(x, "")).replace("**", "*"));
                 y = (y.charAt(y.length() - 1) == '*') ? y.substring(0, y.length() - 1) : y;
             } else {
                 y = y + "*" + init;
             }
             m1.set(i, y);
         }
-        return new Product(m1, init);
+        return new AlgebraicFraction(m1, init);
     }
 
     private ArrayList<String> arrange(ArrayList<String> list) {
@@ -229,13 +254,14 @@ public class PolynomialSolver {
             list.set(i, str);
 
         }
+
         return list;
     }
 
 
     private Character getCharKey() {
-        t++;
-        return (char) t;
+        KEYS++;
+        return (char) KEYS;
     }
 
 
@@ -262,45 +288,16 @@ public class PolynomialSolver {
         return exp;
     }
 
-    private String multiply(String s1, String s2) throws DomainException {
-        String exp;
-        s1 = s1.replace("^-", "" + (char) 197);
-        s2 = s2.replace("^-", "" + (char) 197);
-        var x = (s1.charAt(0) == '-') ? s1.substring(1) : s1;
-        var y = ((s2.charAt(0) == '-') ? s2.substring(1) : s2);
-        x = x.replace("-", "+-");
-        y = y.replace("-", "+-");
-        var m1 = new ArrayList<>(List.of(x.split("\\+")));
-        var m2 = new ArrayList<>(List.of(y.split("\\+")));
-        if (s1.charAt(0) == '-')
-            m1.set(0, "-" + m1.get(0));
-        if (s2.charAt(0) == '-')
-            m2.set(0, "-" + m2.get(0));
-        exp = m1.stream().filter(s -> s.length() > 0).map(s -> (s.charAt(0) == '-') ? s :
-                ('+' + s)).map(x1 -> m2.stream().filter(x2 -> x2.length() > 0)
-                .map(x2 -> x1.replace("" + (char) 197, "^-") + "*"
-                        + x2.replace("" + (char) 197, "^-")).collect(Collectors.joining())).collect(Collectors.joining());
-        return new Polynomial(exp).getFinalExpression();
-    }
-
-    private String divide(String s1, String s2) {
-        s1 = s1.replace("-", "+-");
-        s2 = s2.replace("-", "+-");
-        var m1 = new ArrayList<>(List.of(s1.split("\\+")));
-        var m2 = new ArrayList<>(List.of(s2.split("\\+")));
-        return s1;
-    }
-
     public String pow(String m, int power) throws DomainException {
         var p = "1";
         var k = m;
         if (power >= 1) {
             while (power >= 1) {
                 if (power % 2 == 0) {
-                    k = multiply(k, k);
+                    k = Product.multiply(k, k);
                     power = power / 2;
                 } else {
-                    p = multiply(k, p);
+                    p = Product.multiply(k, p);
                     power--;
                 }
             }
@@ -322,4 +319,7 @@ public class PolynomialSolver {
         return polynomialDegree;
     }
 
+    private String check_for_sign(String s) {
+        return s.replace("+-", "-").replace("++", "+").replace("--", "+").replace("-+", "-");
+    }
 }

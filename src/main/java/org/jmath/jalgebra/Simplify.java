@@ -2,6 +2,7 @@ package org.jmath.jalgebra;
 
 import org.jmath.exceptions.DomainException;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Simplify {
@@ -19,8 +20,7 @@ public class Simplify {
         }
     }
 
-    public String solve() throws DomainException {
-        double ans=0;
+    public Object[] solve() throws DomainException {
         if (isEquation()) {
             var x = new PolynomialSolver(getLHS()).simplify();
             var y = new PolynomialSolver(getRHS()).simplify();
@@ -42,15 +42,14 @@ public class Simplify {
             eqa.simplify();
             return new EquationSolver(eqa).solve_equation();
         } else {
-            return new PolynomialSolver(getLHS()).simplify();
+            return new String[]{new PolynomialSolver(getLHS()).simplify()};
         }
     }
-
     public static void main(String[] args) throws DomainException {
         while (true) {
             var y = new Scanner(System.in);
             var x = new Simplify(y.nextLine());
-            System.out.println(x.solve());
+            System.out.println(Arrays.toString(x.solve()));
         }
     }
 
