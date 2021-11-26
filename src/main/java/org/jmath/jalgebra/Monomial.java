@@ -1,5 +1,6 @@
 package org.jmath.jalgebra;
 
+import org.jmath.core.BigMath;
 import org.jmath.core.Fraction;
 
 import java.util.TreeMap;
@@ -12,11 +13,14 @@ public record Monomial(double coefficient, TreeMap<String, Double> variables) {
         return (!toIntC(coefficient()).equals(""))?(toIntC(coefficient()) + variables().keySet().
                 stream().map(x -> x + toIntP(variables().get(x))).collect(Collectors.joining())):"";
     }
-    public Monomial pow(double power){
+    Monomial pow(double power){
         for(var x:variables.keySet()){
             variables.replace(x,variables.get(x)*power);
         }
-        return new Monomial(Math.pow(Math.abs(coefficient),power),variables);
+        return new Monomial(Math.pow(coefficient,power),variables);
+    }
+    Monomial multiply(double val){
+        return new Monomial(coefficient*val,variables);
     }
     private String toIntC(double coefficient) {
         if (coefficient==0.0)
@@ -32,8 +36,8 @@ public record Monomial(double coefficient, TreeMap<String, Double> variables) {
         return aDouble == 1.0 ? "" : "^" + ifWhole_thenWhole(x);
     }
 
-    private Object ifWhole_thenWhole(double x) {
-        return x - (int) x == 0 ? (int) x : x;
+    private String ifWhole_thenWhole(double x) {
+        return (x-Math.floor(x) == 0.0) ? ""+(int) x : ""+x;
     }
 
 }

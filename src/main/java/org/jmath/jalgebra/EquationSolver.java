@@ -9,7 +9,7 @@ import java.util.TreeMap;
 public record EquationSolver(PolynomialSolver solver) {
     public static void main(String[] args) throws DomainException {
         //8s^3-6s^2-4.5s-12.625
-        System.out.println(Arrays.toString(new EquationSolver(new PolynomialSolver("x^(2/3)+x^(1/3)+1")).solve_equation()));
+        System.out.println(Arrays.toString(new EquationSolver(new PolynomialSolver("8s^3-6s^2-4.5s-12.625")).solve_equation()));
     }
 
     public Object[] solve_equation() throws DomainException {

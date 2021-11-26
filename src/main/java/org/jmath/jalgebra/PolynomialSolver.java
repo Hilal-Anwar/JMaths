@@ -86,11 +86,11 @@ public class PolynomialSolver {
                 var y = getIndexes(val);
                 if (start != 0 && exp.charAt(start - 1) == '^') {
                     var an = new PolynomialSolver(val,memory).simplify();
-                    System.out.println(memory);
                     exp = isNumber(an) ? exp.replace(x, an) : exp.replace(x, "[" + an + "]");
                 } else if (val.contains("^") && y != 0)
                     exp = exp.replace(val, exponent(val, y));
-                else if (val.contains("/")) {
+                else if (val.contains("/"))
+                {
                     var N_D = formatIt(val);
                     var N = solve_multiplication(N_D.numerator());
                     var D = (N_D.denominator().contains("*")) ?
@@ -106,8 +106,18 @@ public class PolynomialSolver {
                     } else key_D = D;
                     if (start != 0 && exp.charAt(start - 1) == '/')
                         exp = exp.replace(x, key_N + "*" + key_D);
-                    else exp = exp.replace(x, key_N + "/" + key_D);
-                } else if (val.contains("*")) {
+                    else {
+                        if(end<exp.length()-1 && exp.charAt(end+1)=='^'){
+                            String power = (exp.charAt(end + 2) == '-') ? "-" : "";
+                            power = power + (power.isEmpty() ? grab(end + 2, exp) : grab(end + 3, exp));
+                            exp = exp.replace(x+"^"+ power, key_N + "^"+ power +"/" + key_D+"^"+ power);
+                        }
+                        else {
+                            exp = exp.replace(x, key_N + "/" + key_D);
+                        }
+                    }
+                }
+                else if (val.contains("*")) {
                     var z = ((val.charAt(0) == '-') ? val.substring(1) : val);
                     z = z.replace("-", "+-");
                     var list = new ArrayList<>(List.of(z.split("\\+")));
@@ -127,7 +137,7 @@ public class PolynomialSolver {
                 memory.put(key, val);
                 exp = exp.replace(x, key);
             }
-            System.out.println(memory);
+
         }
         return exp;
     }
@@ -224,7 +234,7 @@ public class PolynomialSolver {
             String y = m1.get(i);
             if (y.contains("/")) {
                 String x = y.substring(y.indexOf("/") + 1);
-                y = y.replace("/" + x, ("*" + init.replaceFirst(x, "")).replace("**", "*"));
+                y = y.replace("/" + x, ("*" + init.replaceFirst(x.replace("*","\\*"), "")).replace("**", "*"));
                 y = (y.charAt(y.length() - 1) == '*') ? y.substring(0, y.length() - 1) : y;
             } else {
                 y = y + "*" + init;

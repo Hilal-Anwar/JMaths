@@ -11,7 +11,6 @@ public record Division(String exp, String quotient, String remainder) {
         //(8x3-45y2+18xy)/(4x+15y) 8x^3+30xy
         while ((p1.getDegree() >= p2.getDegree()) && (!p1.getPolynomial().isEmpty())) {
             var c = findQuotient(p1, p2);
-            System.out.println(c + "       " + p1.getFinalExpression());
             if (!Q.isEmpty())
                 Q = (Q + "+" + new Polynomial(c).getFinalExpression()).replace("+-", "-").
                         replace("-+", "-").replace("++", "+").replace("--", "-");

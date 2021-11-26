@@ -199,5 +199,13 @@ public class Polynomial {
             default -> EquationType.UNKNOWN;
         };
     }
-
+    boolean isNoneSame(Polynomial p){
+        var a=polynomial;
+        var b=p.getPolynomial();
+        for (var k:b) {
+            if(a.contains(k))
+                return false;
+        }
+        return  true;
+    }
 }
