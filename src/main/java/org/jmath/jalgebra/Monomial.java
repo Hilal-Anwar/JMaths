@@ -30,7 +30,29 @@ public record Monomial(double coefficient, TreeMap<String, Double> variables) {
         String sign=(""+coefficient).charAt(0)=='-'?"-":"";
         return sign+new Fraction(""+Math.abs(coefficient)).getValues();
     }
-
+    public String getMonomial(Monomial filter){
+        var z=toIntC(coefficient());
+        z=z.equals("1")?"":z;
+        if (!z.equals("") /*&& !z.equals("1")*/) {
+            StringBuilder result = new StringBuilder();
+            for (String x : variables().keySet()) {
+                if (!filter.variables.get(x).equals(variables.get(x))) {
+                    String s = x + toIntP(variables().
+                            get(x));
+                    result.append(s);
+                }
+            }
+            String sb = result.toString();
+            return z + sb;
+        }
+       /* else if(z.equals("1") && variables().size()!=0){
+            return  variables().keySet().
+                    stream().map(x -> x + toIntP(variables().get(x))).collect(Collectors.joining());
+        }
+        else if(z.equals("1"))
+            return z;*/
+        return "";
+    }
     private String toIntP(Double aDouble) {
         double x = aDouble;
         return aDouble == 1.0 ? "" : "^" + ifWhole_thenWhole(x);

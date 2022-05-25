@@ -40,7 +40,7 @@ public class CurrencyLoader
 
     public double getCurrencyValue(String code) {
         if (database.getData(code)!=null)
-        return Double.parseDouble(database.getData(code));
+         return Double.parseDouble(database.getData(code));
         return Double.NaN;
     }
 

@@ -162,7 +162,7 @@ public final class BigMath {
         return cot(a, Angle.DEGREE);
     }
 
-    // Inverse Trigonometry
+    // Inverse MathFunctionSolver
     public static BigDecimal asin(BigDecimal n, Angle type) throws DomainException {
         if (n.doubleValue()<-1||n.doubleValue()>1)
             throw domainException;

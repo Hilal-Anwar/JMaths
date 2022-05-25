@@ -42,8 +42,10 @@ class FunctionManager {
             end = exp.indexOf(')', exp.lastIndexOf('('));
             String x = exp.substring(start, end + 1);
             String val = exp.substring(start + 1, end);
-            if (!val.contains(","))
+            if (!val.contains(",")){
+                val=val.replace("--","+").replace("+-","-").replace("-+","-");
                 ans = new Operators(val, constants)._eval();
+            }
             if (start != 0) {
                 char at = exp.charAt(start - 1);
                 if (functions.containsKey(at)) {

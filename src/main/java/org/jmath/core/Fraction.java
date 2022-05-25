@@ -1,13 +1,17 @@
 package org.jmath.core;
 
+import java.util.Arrays;
+
 public class Fraction {
     private final String number;
     private int bar = 0;
-    private boolean condition=false;
+    private boolean condition = false;
+
     public Fraction(String input) {
         if (!input.contains("E")) {
             String num = input.substring(input.indexOf('.') + 1);
             String[] a = num.length() >= 4 ? getPatterns(num) : new String[]{};
+            System.out.println(Arrays.toString(a));
             if ((a.length > 0) && !a[0].equals("9")) {
                 this.bar = a[0].length();
                 String scr = "";
@@ -18,9 +22,9 @@ public class Fraction {
             } else {
                 this.number = input;
             }
-        }else {
-            number=input;
-            condition=true;
+        } else {
+            number = input;
+            condition = true;
         }
     }
 
@@ -34,20 +38,22 @@ public class Fraction {
         int max_count = 0;
         for (int i = 1; i <= number.length() / 2; i++) {
             String subScript = number.substring(number.length() - i);
-            for (int j = number.length() - subScript.length(); j >= 0; j = j - subScript.length()) {
-                if ((j - subScript.length()) >= 0) {
-                    String substring = number.substring(j - subScript.length(), j);
-                    if (substring.equals(subScript)) {
-                        value = substring;
-                        count++;
-                        pos = j - subScript.length();
-                    } else {
-                        if (count >= 1 && count > max_count) {
-                            pattern = new String[]{value, pos + ""};
-                            max_count = count + 1;
-                            count = 0;
+            if (Long.parseLong(subScript) != 0) {
+                for (int j = number.length() - subScript.length(); j >= 0; j = j - subScript.length()) {
+                    if ((j - subScript.length()) >= 0) {
+                        String substring = number.substring(j - subScript.length(), j);
+                        if (substring.equals(subScript)) {
+                            value = substring;
+                            count++;
+                            pos = j - subScript.length();
+                        } else {
+                            if (count >= 1 && count > max_count) {
+                                pattern = new String[]{value, pos + ""};
+                                max_count = count + 1;
+                                count = 0;
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -99,7 +105,10 @@ public class Fraction {
         }
         return min;
     }
+
     public String getValues() {
-        return condition ? this.number : this.bar != 0 ? P_by_QFormTillInfinity(this.number, bar) : P_by_QForm(number);
+        if (condition) return this.number;
+        return this.bar != 0 ? P_by_QFormTillInfinity(this.number, bar) : P_by_QForm(number);
     }
+
 }

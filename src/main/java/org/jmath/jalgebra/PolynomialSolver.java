@@ -3,17 +3,36 @@ package org.jmath.jalgebra;
 import org.jmath.exceptions.DomainException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static org.jmath.core.CharSet.getCharKey;
+
 public class PolynomialSolver {
+    public TreeMap<String, String> getMemory() {
+        return memory;
+    }
+
+    public TreeMap<String, exponents> getExponential_memory() {
+        return exponential_memory;
+    }
+
+    public TreeMap<String, String> getMemory_2() {
+        return memory_2;
+    }
+
     private TreeMap<String, String> memory = new TreeMap<>();
+    private TreeMap<String, exponents> exponential_memory = new TreeMap<>();
+    private final TreeMap<String, String> memory_2 = new TreeMap<>();
     private ArrayList<Monomial> monomials_list;
     private EquationType equationType;
     private boolean isPolynomial;
     private double polynomialDegree;
-    private int KEYS = 200;
+    private HashSet<Object> variable;
+
+    // private int key = 200;
     private String exp;
 
     public PolynomialSolver(String exp) {
@@ -21,40 +40,54 @@ public class PolynomialSolver {
         this.exp = format(add_or_remove_parenthesis(exp));
     }
 
-    public PolynomialSolver(String exp,TreeMap<String, String> memory) {
+    /*PolynomialSolver(String exp, int key, TreeMap<String, String> memory, TreeMap<String, exponents> exponential_memory) {
         this.exp = exp;
-        this.memory=memory;
+        this.key = key;
+        this.memory = memory;
+        this.exponential_memory = exponential_memory;
         this.exp = format(add_or_remove_parenthesis(exp));
-    }
+    }*/
+
+    /*PolynomialSolver(String exp, int key) {
+        this.exp = exp;
+        this.key = key;
+        this.exp = format(add_or_remove_parenthesis(exp));
+    }*/
 
     public ArrayList<Monomial> getMonomialList() {
         return monomials_list;
     }
-    public boolean isMonomial(){
-        return monomials_list.size()==1;
+
+    public boolean isMonomial() {
+        return this.monomials_list.size() == 1;
     }
+
     public String simplify() throws DomainException {
         var x = solve_parenthesis(exp);
-        x = values(x);
-        if ((!x.contains("[") && !x.contains("]")) && x.contains("/")) {
+        //x = values(x);
+        if (x.contains("/")) {
             String N, D;
             N = x.substring(0, x.indexOf('/'));
             D = x.substring(x.indexOf('/') + 1);
             N = memory.getOrDefault(N, N);
             D = memory.getOrDefault(D, D);
+            //N=change_exponential_to_algebra(N);
+            //D=change_exponential_to_algebra(D);
             var a = new Polynomial(N);
             var b = new Polynomial(D);
             return a.getFinalExpression() + "/" + b.getFinalExpression();
-        } else if ((!x.contains("[") && !x.contains("]"))) {
+        } else {
+            System.out.println(x);
+            //x = change_exponential_to_algebra(x);
             var a = new Polynomial(values(x));
             var r = a.getFinalExpression();
             monomials_list = a.getPolynomial();
             isPolynomial = a.isPolynomial();
             equationType = a.getEquationType();
             polynomialDegree = a.getDegree();
+            variable = a.getVariables();
             return r;
         }
-        return x;
     }
 
     private String format(String exp) {
@@ -82,15 +115,75 @@ public class PolynomialSolver {
             end = exp.indexOf(')', exp.lastIndexOf('('));
             String x = exp.substring(start, end + 1);
             String val = exp.substring(start + 1, end);
-            if ((!val.contains("[")) && (isValidExpression(val) || val.contains("/") || (start != 0 && exp.charAt(start - 1) == '^'))) {
-                var y = getIndexes(val);
+            //System.out.println(exp+"        "+memory+"     "+memory_2+"    "+exponential_memory);
+            System.out.println(exp);
+            if ((isValidExpression(val) /*|| val.contains("^") */|| val.contains("/") ||
+                    (start != 0 && exp.charAt(start - 1) == '^'))) {
+                //var y = getIndexes(val);
+                val=check_for_unsupported_exponent_form(val);
                 if (start != 0 && exp.charAt(start - 1) == '^') {
-                    var an = new PolynomialSolver(val,memory).simplify();
-                    exp = isNumber(an) ? exp.replace(x, an) : exp.replace(x, "[" + an + "]");
-                } else if (val.contains("^") && y != 0)
-                    exp = exp.replace(val, exponent(val, y));
-                else if (val.contains("/"))
-                {
+                    var arty = new PolynomialSolver(val);
+                    String an = arty.simplify();
+                    if (isNumber(an)) exp = exp.replace(x, an);
+                    else {
+                        var k = getCharKey();
+                        memory_2.put("" + k, an);
+                        exp = exp.replace(x, "" + k);
+                    }
+                }
+                //else if (val.contains("^") /*&& y != 0*/) {
+                    /*String value = val;
+                    System.out.println(exp);
+                    System.out.println(val);
+                    var p = new Polynomial(check_for_unsupported_exponent_form(val));
+                    System.out.println("new polynomial   " + p.getFinalExpression());
+                    var lis = p.getPolynomial();
+                    System.out.println(lis);
+                    for (int i = 0; i < lis.size(); i++) {
+                        var rt = lis.get(i);
+                        var vra_1 = new TreeMap<String, Double>();
+                        var vra_2 = new TreeMap<String, String>();
+                        var vra = exponential_memory.keySet();
+                        System.out.println("exponent   " + exponential_memory);
+                        for (var t : vra) {
+                            if (rt.getMonomial().contains(t)) {
+                                if (vra_2.containsKey(exponential_memory.get(t).base)) {
+                                    System.out.println("working");
+                                    String key = vra_2.get(exponential_memory.get(t).base);
+                                    String _po = Product.multiply("" + rt.variables().get(key), exponential_memory.get(key).power);
+                                    String _pt = Product.multiply(exponential_memory.get(t).power, "" + rt.variables().get(t));
+                                    exponential_memory.replace(t,
+                                            new exponents(exponential_memory.get(t).base,
+                                                    new Polynomial(_pt + "+" + _po).getFinalExpression()));
+                                } else {
+                                    vra_2.put(exponential_memory.get(t).base, t);
+                                    vra_1.put(t, rt.variables().get(t));
+                                }
+                            } else if (rt.variables().get(t) != null) {
+                                vra_1.put(t, rt.variables().get(t));
+                            }
+                        }
+                        if (!vra.isEmpty())
+                            lis.set(i, new Monomial(rt.coefficient(), vra_1));
+                    }
+                    System.out.println(p.getPolynomial() + "       " + lis);
+                    val = p.getFinalExpression();
+                    System.out.println("kkk" + val);
+                    //var y = getIndexes(val);
+                    if (!p.isSingle_Algebraic_term()) {
+                        var k = getCharKey();
+                        memory_2.put("" + k, val);
+                        exp = exp.replace(x, "" + k);
+                    } else {
+                        System.out.println(exp);
+                        exp = exp.replace(x, val);
+                        exp= exp.replace(x.replace("(","").replace(")",""),val);
+                        System.out.println(exp+'\t'+x);
+                    }*/
+                    //System.out.println(exp);
+                    //exp = exp.replace(val, power(val, y));
+                //}
+            else if (val.contains("/")) {
                     var N_D = formatIt(val);
                     var N = solve_multiplication(N_D.numerator());
                     var D = (N_D.denominator().contains("*")) ?
@@ -107,17 +200,15 @@ public class PolynomialSolver {
                     if (start != 0 && exp.charAt(start - 1) == '/')
                         exp = exp.replace(x, key_N + "*" + key_D);
                     else {
-                        if(end<exp.length()-1 && exp.charAt(end+1)=='^'){
+                        if (end < exp.length() - 1 && exp.charAt(end + 1) == '^') {
                             String power = (exp.charAt(end + 2) == '-') ? "-" : "";
-                            power = power + (power.isEmpty() ? grab(end + 2, exp) : grab(end + 3, exp));
-                            exp = exp.replace(x+"^"+ power, key_N + "^"+ power +"/" + key_D+"^"+ power);
-                        }
-                        else {
+                            power = power + (power.isEmpty() ? grab_front(end + 2, exp) : grab_front(end + 3, exp));
+                            exp = exp.replace(x + "^" + power, key_N + "^" + power + "/" + key_D + "^" + power);
+                        } else {
                             exp = exp.replace(x, key_N + "/" + key_D);
                         }
                     }
-                }
-                else if (val.contains("*")) {
+                } else if (val.contains("*")) {
                     var z = ((val.charAt(0) == '-') ? val.substring(1) : val);
                     z = z.replace("-", "+-");
                     var list = new ArrayList<>(List.of(z.split("\\+")));
@@ -128,16 +219,24 @@ public class PolynomialSolver {
                     memory.put(key_N, N);
                     exp = exp.replace(x, key_N);
                 } else {
-                    for (var key : memory.keySet()) {
+                    /*for (var key : memory.keySet()) {
                         exp = exp.replace(key, memory.get(key));
-                    }
+                    }*/
+                    System.out.println(memory);
+                    String key = getCharKey() + "";
+                    memory.put(key, val);
+                    exp = exp.replace(x, key);
                 }
             } else {
+                //System.out.println("vvv"+val+"   "+x);
+                //if (!new Polynomial(val).isSingle_Algebraic_term()){
+                System.out.println(memory);
                 String key = getCharKey() + "";
                 memory.put(key, val);
                 exp = exp.replace(x, key);
+                //}
+                // else exp = exp.replace(x,val);
             }
-
         }
         return exp;
     }
@@ -151,31 +250,126 @@ public class PolynomialSolver {
         }
     }
 
-    private String exponent(String x, int y) throws DomainException {
+    private String change_exponential_to_algebra(String str) {
+        int start = 0;
+        while (str.indexOf("^", start) != -1) {
+            if (Character.isLetter(str.charAt(str.indexOf("^", start) + 1)) ||
+                    (str.charAt(str.indexOf("^", start) + 1) == '-' &&
+                            Character.isLetter(str.charAt(str.indexOf("^", start) + 2)))) {
+                var k = getCharKey();
+                int m = str.indexOf("^", start);
+                var base = grab_back(m - 1, str);
+                var power = str.charAt(m + 1) == '-' ? (str.charAt(m + 1) + grab_front(m + 2, str)) :
+                        grab_front(m + 1, str);
+                exponential_memory.put("" + k, new exponents(base, power));
+                str = str.replace(base + "^" + power, "" + k);
+            } else
+                start = str.indexOf("^", start) + 1;
+        }
+        return str;
+    }
+
+    /*private String exponent(String x) throws DomainException {
+        var pol=new Polynomial(x);
+        var list=pol.getPolynomial();
+        for(var v:list){
+
+        }
+    }*/
+    private String check_for_unsupported_exponent_form(String exp) throws DomainException {
+        int start = 0;
+        while (exp.indexOf('^', start) != -1) {
+            start = exp.indexOf('^', start);
+            String power = get_power(start + 1, exp);
+            if (!isNumber(power)) {
+                //System.out.println(exponential_memory + "         " + exp);
+                String values = "" + exp.charAt(start - 1);
+                if (exponential_memory.containsKey(values)) {
+                    var expo = exponential_memory.get(values).power + "*" + values(memory_2, power);
+                    //System.out.println("expo  " + expo);
+                    var p = new Polynomial(expo).getFinalExpression();
+                    String base = exponential_memory.get(values).base;
+                    String ch=""+getCharKey();
+                    exponential_memory.put(/*"" + exp.charAt(start - 1)*/ch, new exponents(base, p));
+                    //System.out.println("expo   " + exponential_memory);
+                    exp = exp.replace(exp.charAt(start - 1) + "^" + power, "" + ch);
+                } else {
+                    var k = getCharKey();
+                    exponential_memory.put("" + k, new exponents(values, values(memory_2, power)));
+                    exp = exp.replace(exp.charAt(start - 1) + "^" + power, "" + k);
+                    //System.out.println("exp     1    " + exp);
+                }
+            }
+            start++;
+            //System.out.println(exp);
+        }
+        return exp;
+
+    }
+
+    private String get_power(int i, String x) {
+        x = x + "+";
+        StringBuilder va = new StringBuilder();
+        if (x.charAt(i) == '-') {
+            va.append('-');
+            i++;
+        }
+        while (Character.isDigit(x.charAt(i)) || Character.isLetter(x.charAt(i))) {
+            va.append(x.charAt(i));
+            i++;
+        }
+        return (x.charAt(i) == '^') ? va.substring(0, va.length() - 1) : va.toString();
+    }
+
+    private String power(String x, int y) throws DomainException {
+        System.out.println(x + "\t" + y);
         if (y != 0) {
             String pr = (x.charAt(y + 1) == '-') ? "-" : "";
-            pr = pr + (pr.isEmpty() ? grab(y + 1, x) : grab(y + 2, x));
+            pr = pr + (pr.isEmpty() ? grab_front(y + 1, x) : grab_front(y + 2, x));
+            System.out.println(pr);
             String va;
-            if ((y - 2) >= 0 && x.charAt(y - 2) == '/' && Integer.parseInt(pr) < 0) {
-                va = pow(values("" + x.charAt(y - 1)), -Integer.parseInt(pr));
-                x = x.replace("/" + x.charAt(y - 1) + "^" + pr, "*(" + va + ")");
-            } else {
-                va = pow(values("" + x.charAt(y - 1)), Integer.parseInt(pr));
-                x = x.replace(x.charAt(y - 1) + "^" + pr, "(" + va + ")");
-            }
+            if ((y - 2) >= 0 && x.charAt(y - 2) == '/' && pr.contains("-")) {
+                if (isNumber(pr)) {
+                    va = pow(values("" + x.charAt(y - 1)), -Integer.parseInt(pr));
+                    x = x.replace("/" + x.charAt(y - 1) + "^" + pr, "*(" + va + ")");
+                } else {
 
+                    var k = getCharKey();
+                    exponential_memory.put("" + k, new exponents(values("" + x.charAt(y - 1)), pr.substring(1)));
+                    x = x.replace("/" + x.charAt(y - 1) + "^" + pr, "*(" + k + ")");
+                }
+            } else {
+                if (isNumber(pr)) {
+                    va = pow(values("" + x.charAt(y - 1)), Integer.parseInt(pr));
+                    x = x.replace(x.charAt(y - 1) + "^" + pr, "(" + va + ")");
+                } else {
+                    var k = getCharKey();
+                    exponential_memory.put("" + k, new exponents(values("" + x.charAt(y - 1)), pr));
+                    x = x.replace(x.charAt(y - 1) + "^" + pr, "(" + k + ")");
+
+                }
+            }
         }
         return x;
     }
 
-    private String grab(int i, String x) {
+    private String grab_front(int i, String x) {
         x = x + "+";
         StringBuilder va = new StringBuilder();
-        while (Character.isDigit(x.charAt(i))) {
+        while (Character.isDigit(x.charAt(i)) || Character.isLetter(x.charAt(i))) {
             va.append(x.charAt(i));
             i++;
         }
         return va.toString();
+    }
+
+    private String grab_back(int i, String x) {
+        x = x + "+";
+        int k = i;
+        while (i > 0 && (Character.isDigit(x.charAt(i)) || Character.isLetter(x.charAt(i)))) {
+            i--;
+        }
+        return (i == 0) ? x.substring(i, k + 1) : x.substring(i + 1, k + 1);
     }
 
     private int getIndexes(String str) {
@@ -217,6 +411,13 @@ public class PolynomialSolver {
         return val;
     }
 
+    private String values(TreeMap<String, String> memory, String x) {
+        String val = x;
+        while (memory.containsKey(val))
+            val = memory.get(val);
+        return val;
+    }
+
     private AlgebraicFraction formatIt(String val) {
         var z = ((val.charAt(0) == '-') ? val.substring(1) : val);
         z = z.replace("/-", "" + (char) 195);
@@ -227,14 +428,14 @@ public class PolynomialSolver {
             m1.set(0, "-" + m1.get(0));
         String init = m1.stream().filter(s -> s.contains("/")).map(s ->
                         (s.replace("" + (char) 197, "^-").replace("" + (char) 195, "/-"))
-                        .substring(s.indexOf("/") + 1) + "*").
+                                .substring(s.indexOf("/") + 1) + "*").
                 collect(Collectors.joining());
         init = init.substring(0, init.length() - 1);
         for (int i = 0; i < m1.size(); i++) {
             String y = m1.get(i);
             if (y.contains("/")) {
                 String x = y.substring(y.indexOf("/") + 1);
-                y = y.replace("/" + x, ("*" + init.replaceFirst(x.replace("*","\\*"), "")).replace("**", "*"));
+                y = y.replace("/" + x, ("*" + init.replaceFirst(special_replace(x), "")).replace("**", "*"));
                 y = (y.charAt(y.length() - 1) == '*') ? y.substring(0, y.length() - 1) : y;
             } else {
                 y = y + "*" + init;
@@ -268,12 +469,12 @@ public class PolynomialSolver {
         return list;
     }
 
-
+/*
     private Character getCharKey() {
-        KEYS++;
-        return (char) KEYS;
+        key++;
+        return (char) key;
     }
-
+*/
 
     private boolean isValidExpression(String val) {
         return memory.keySet().stream().anyMatch(val::contains);
@@ -317,6 +518,10 @@ public class PolynomialSolver {
         return p;
     }
 
+    private String special_replace(String regX) {
+        return regX.replace("*", "\\*").replace("^", "\\^");
+    }
+
     public EquationType getEquationType() {
         return equationType;
     }
@@ -329,7 +534,21 @@ public class PolynomialSolver {
         return polynomialDegree;
     }
 
+    public HashSet<Object> getVariables() {
+        return variable;
+    }
+
     private String check_for_sign(String s) {
-        return s.replace("+-", "-").replace("++", "+").replace("--", "+").replace("-+", "-");
+        return s.replace("+-", "-").replace("++", "+").
+                replace("--", "+").replace("-+", "-");
+    }
+
+    /*
+        int getKeyNumber() {
+            return key;
+        }
+    */
+    record exponents(String base, String power) {
+
     }
 }

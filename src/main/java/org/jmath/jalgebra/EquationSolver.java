@@ -1,23 +1,19 @@
 package org.jmath.jalgebra;
 
+
 import org.jmath.exceptions.DomainException;
 import org.jmath.number.Complex;
 
-import java.util.Arrays;
 import java.util.TreeMap;
 
-public record EquationSolver(PolynomialSolver solver) {
-    public static void main(String[] args) throws DomainException {
-        //8s^3-6s^2-4.5s-12.625
-        System.out.println(Arrays.toString(new EquationSolver(new PolynomialSolver("8s^3-6s^2-4.5s-12.625")).solve_equation()));
-    }
-
+public record EquationSolver(Polynomial solver)
+{
     public Object[] solve_equation() throws DomainException {
-        System.out.println(solver.simplify());
-        System.out.println(solver.getMonomialList());
-        double d = solver.getPolynomialDegree();
+        double d = solver.getDegree();
+        System.out.println(solver.getPolynomial());
+        System.out.println(solver.getVariables());
         if (solver.getEquationType().equals(EquationType.LINEAR) && solver.isPolynomial() && (d - (int) d == 0)) {
-            int degree = (int) solver.getPolynomialDegree();
+            int degree = (int) solver.getDegree();
             return switch (degree) {
                 case 1 -> degree_1();
                 case 2 -> degree_2();
@@ -38,8 +34,8 @@ public record EquationSolver(PolynomialSolver solver) {
         double A = c / a - (3 * (b * b) / (8 * a * a));
         double B = d / a - ((b * c) / (2 * a * a)) + ((b * b * b) / (8 * a * a * a));
         double C = e / a - ((b * d) / (4 * a * a)) + ((b * b * c) / (16 * a * a * a)) - ((3 * b * b * b * b) / (256 * a * a * a * a));
-        var value = new EquationSolver(new PolynomialSolver
-                (check_for_sign(8 + "s3-" + (4 * A) + "s2-" + (8 * C) + "s+" + (4 * A * C - B * B)))).solve_equation()[0];
+        var value = new EquationSolver(new Polynomial(check_for_sign(8 + "s3-" + (4 * A) + "s2-" + (8 * C) + "s+" + (4 * A * C - B * B)))).
+                solve_equation()[0];
         if (value instanceof Complex complex) {
             var num = complex.product(new Complex(2, 0)).subtract(new Complex(A, 0)).root(2);
             var r1 = complex.product(new Complex(2, 0)).add(new Complex(A, 0));
@@ -85,7 +81,7 @@ public record EquationSolver(PolynomialSolver solver) {
                 }
             }
         }
-        return new Object[]{x1,x2,x3,x4};
+        return new Object[]{x1, x2, x3, x4};
     }
 
     private Object[] degree_3() {
@@ -115,7 +111,7 @@ public record EquationSolver(PolynomialSolver solver) {
             x2 = new Complex(real, (S - T) * 0.5 * Math.sqrt(3));
             x3 = new Complex(real, -(S - T) * 0.5 * Math.sqrt(3));
         }
-        return new Object[]{x1,x2,x3};
+        return new Object[]{x1, x2, x3};
     }
 
     private String[] degree_2() {
@@ -129,14 +125,15 @@ public record EquationSolver(PolynomialSolver solver) {
             return new String[]{y + "=" + toIntC((-b + sqrt) / (2 * a)), y + "=" + toIntC((-b - sqrt) / (2 * a))};
         } else {
             String sqrt = isPerfectSquare(v) ? (toIntC(Math.sqrt(Math.abs(v)))) + "i" : "√" + toIntC(Math.abs(v)) + "i";
-            return new String[]{y + "=" + "(" + (toIntC(-b)) + "+" + sqrt + ")/" + toIntC(2 * a), y + "=" + "(" + (toIntC(-b)) + "-" + sqrt + ")/" + toIntC(2 * a)};
+            return new String[]{y + "=" + "(" + (toIntC(-b)) + "+" + sqrt + ")/" + toIntC(2 * a), y + "=" + "(" +
+                    (toIntC(-b)) + "-" + sqrt + ")/" + toIntC(2 * a)};
         }
     }
 
     private Values getValues() {
         String va = "";
         var te = new TreeMap<Integer, Double>();
-        for (var x : solver.getMonomialList()) {
+        for (var x : solver.getPolynomial()) {
             TreeMap<String, Double> variables = x.variables();
             int d;
             if (!variables.isEmpty()) {
@@ -155,12 +152,13 @@ public record EquationSolver(PolynomialSolver solver) {
     }
 
     private String check_for_sign(String s) {
-        return s.replace("+-", "-").replace("++", "+").replace("--", "+").replace("-+", "-");
+        return s.replace("+-", "-").replace("++", "+").replace("--",
+                "+").replace("-+", "-");
     }
 
     private String[] degree_1() {
         double ans;
-        ans = -solver.getMonomialList().get(0).coefficient() / solver.getMonomialList().get(1).coefficient();
+        ans = -solver.getPolynomial().get(0).coefficient() / solver.getPolynomial().get(1).coefficient();
         return new String[]{"" + ans};
     }
 

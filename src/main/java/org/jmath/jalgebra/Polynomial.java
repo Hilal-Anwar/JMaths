@@ -157,7 +157,11 @@ public class Polynomial {
     public ArrayList<Monomial> getPolynomial() {
         return this.polynomial;
     }
-
+    public boolean isSingle_Algebraic_term(){
+        if (polynomial.size()==1 && polynomial.get(0).coefficient()==1.0 && polynomial.get(0).variables()==null )
+            return true;
+        else return polynomial.size() == 1 && polynomial.get(0).coefficient() == 1.0 && polynomial.get(0).variables().size() == 1 && this.getDegree() == 1;
+    }
     String getFinalExpression() {
         String x = IntStream.iterate(polynomial.size() - 1, i -> i >= 0, i -> i - 1).
                 mapToObj(i -> polynomial.get(i).getMonomial() + "+").collect(Collectors.joining());
@@ -171,6 +175,13 @@ public class Polynomial {
                 flatMap(Collection::stream).
                 collect(Collectors.toCollection(HashSet::new));
         return hasSet.size();
+    }
+    public HashSet<Object> getVariables(){
+        HashSet<Object> hasSet;
+        hasSet = polynomial.stream().map(m -> m.variables().keySet()).
+                flatMap(Collection::stream).
+                collect(Collectors.toCollection(HashSet::new));
+        return hasSet;
     }
     boolean isPolynomial() {
         return polynomial.stream().map(y -> y.variables().values()).flatMap(Collection::stream).
@@ -188,7 +199,7 @@ public class Polynomial {
             var x=new TreeSet<>(i.variables().values());
             if (!x.isEmpty())
                 return x.last();
-        else return 0.0;
+            else return 0.0;
         }));
     }
 

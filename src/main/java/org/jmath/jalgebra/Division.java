@@ -4,6 +4,7 @@ import org.jmath.exceptions.DomainException;
 
 import java.util.HashSet;
 
+
 public record Division(String exp, String quotient, String remainder) {
     static Division divide(Polynomial p1, Polynomial p2) throws DomainException {
         String Q = "";
@@ -16,8 +17,8 @@ public record Division(String exp, String quotient, String remainder) {
                         replace("-+", "-").replace("++", "+").replace("--", "-");
             else
                 Q = new Polynomial(c).getFinalExpression();
-            p1 = new Polynomial(new PolynomialSolver(p1.getFinalExpression() +
-                    "-(" + Product.multiply(p2.getFinalExpression(), new Polynomial(c).getFinalExpression()) + ")").simplify());
+            p1 = new Polynomial(p1.getFinalExpression()+"+"+Product.multiply("-1",Product.multiply(p2.getFinalExpression(),
+                    new Polynomial(c).getFinalExpression())));
             var m = p1.getFinalExpression();
             if (memory.contains(m))
                 break;
@@ -45,14 +46,20 @@ public record Division(String exp, String quotient, String remainder) {
             var x = b.get(i).getMonomial();
             for (int j = a.size() - 1; j >= 0; j--) {
                 var y = new Polynomial(a.get(j).getMonomial() + "/" + x);
-                if (isWholeNumber(y.getPolynomial().get(0).coefficient()))
+
+                if (isValidDivision(y.getPolynomial().get(0))&&isWholeNumber(y.getPolynomial().get(0).coefficient()))
                     return y.getFinalExpression();
             }
         }
         return new Polynomial(a.get(a.size() - 1).getMonomial() + "/" + b.get(b.size() - 1).getMonomial()).getFinalExpression();
     }
+    private static boolean isValidDivision(Monomial m){
+        var t=m.variables().keySet();
 
+        return t.stream().noneMatch(k -> m.variables().get(k) < 0);
+    }
     private static boolean isWholeNumber(double coefficient) {
         return (coefficient - Math.floor(coefficient) == 0.0);
     }
+
 }

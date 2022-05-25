@@ -7,25 +7,68 @@ import org.jmath.jconvert.quantities.Angle;
 import org.jmath.jnum.JNum;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class Factorization {
     HashSet<Object> list = new HashSet<>();
-    ArrayList<Polynomial> factors = new ArrayList<>();
+    ArrayList<String> factors = new ArrayList<>();
 
-    public Factorization() {
-
+    public Factorization(String polynomial) throws DomainException, FunctionFormatException, KeyWordException {
+        factors.add(polynomial);
+        for (int i = 0; i < factors.size(); i++) {
+            String z = factors.get(i);
+            test(z);
+        }
     }
 
-    public static void main(String[] args) throws DomainException, FunctionFormatException, KeyWordException {
-        //"ax+a+bx+b+cx+c+dx+d  ax+a+bx+b+cx+c+dx+d+ex+e  ,3x3-5x2+5x-2  (9x^3-15x^2+15x-6)/(3x-2)  3x^2-3x+3   (18x^3-30x^2+30x-12)/(2x-1)    x-2/3"
-        long start = System.currentTimeMillis();
-        var x = new Factorization();
-        //System.out.println(new Polynomial("3a2+5ab+2b2").getFinalExpression());
-        var f = x.factorization1(new Polynomial("ax+a+bx+b+cx+c+dx+d+ex+e"));
-        if (f.hasFactors())
-            System.out.println(f.polynomials()[0] + "  " + f.polynomials()[1]);
-        System.out.println(System.currentTimeMillis() - start);
+    void test(String z) throws DomainException, FunctionFormatException, KeyWordException {
+        Polynomial p = new Polynomial(z);
+        var a = find_GCD_of_polynomial(p);
+        if (a.hasFactors() && !a.polynomials()[0].equals("1") && !a.polynomials()[0].equals("-1")) {
+            factors.remove(z);
+            factors.addAll(List.of(a.polynomials()));
+            return;
+        }
+        var b = getFactors(p);
+        if (b.hasFactors()) {
+            factors.remove(z);
+            factors.addAll(List.of(b.polynomials()));
+            return;
+        }
+        if (p.getPolynomial().size() == 3) {
+            var c = three_element_factor(p);
+            if (c.hasFactors()) {
+                factors.remove(z);
+                factors.addAll(List.of(c.polynomials()));
+                return;
+            }
+        }
+        if (p.getPolynomial().size() >= 3) {
+            var d = factorization1(p);
+            if (d.hasFactors()) {
+                factors.remove(z);
+                factors.addAll(List.of(d.polynomials()));
+                return;
+            }
+        }
+        if (p.getPolynomial().size() >= 3) {
+            var e = factorization2(p);
+            if (e.hasFactors()) {
+                factors.remove(z);
+                factors.addAll(List.of(e.polynomials()));
+                return;
+            }
+        }
+        var f = factor_of_form_a2_b2(p);
+        if (f.hasFactors()) {
+            factors.remove(z);
+            factors.addAll(List.of(f.polynomials()));
+            return;
+        }
+        var g = factor_of_form_a3_b3(p);
+        if (g.hasFactors()) {
+            factors.remove(z);
+            factors.addAll(List.of(g.polynomials()));
+        }
     }
 
     private Factors getFactors(Polynomial polynomial) throws DomainException, FunctionFormatException, KeyWordException {
@@ -36,6 +79,7 @@ public class Factorization {
             var p = Math.abs(polynomial.getPolynomial().get(0).coefficient());
             var q = Math.abs(polynomial.getPolynomial().get(polynomial.getPolynomial().size() - 1).coefficient());
             var fac = generate_possible_Factors(p, q);
+            System.out.println("fac"+fac);
             var k = new JNum();
             k.eval("f(" + variable + "):{" + polynomial.getFinalExpression() + "}", Angle.DEGREE);
             for (var x : fac.keySet()) {
@@ -49,7 +93,7 @@ public class Factorization {
                 }
             }
             if (polynomial.getDegree() == list.size()) {
-                return new Factors(f.toString());
+                return new Factors(list.toArray(String[]::new));
             } else if (!list.isEmpty()) {
                 return new Factors(f.toString(), Division.divide(polynomial, new Polynomial(f.toString())).quotient());
             }
@@ -59,7 +103,7 @@ public class Factorization {
 
     public Factors find_GCD_of_polynomial(Polynomial polynomial) throws DomainException {
         var pol = polynomial.getFinalExpression();
-        var list = polynomial.getPolynomial();
+        var list =new Polynomial(pol).getPolynomial();
         var gcd = list.get(0);
         double coefficient;
         for (var x = 1; x < list.size(); x++) {
@@ -96,6 +140,8 @@ public class Factorization {
                 var n = remove_unnecessary_decimal(b);
                 if (m.equals(n) && !m.equals("0"))
                     factor.put((double) a / b, "1");
+                else if (!m.equals("0") && n.equals("1"))
+                    factor.put((double) a / b, m);
                 else if (!m.equals("0") && !n.equals("0"))
                     factor.put((double) a / b, m + "/" + n);
             }
@@ -126,7 +172,8 @@ public class Factorization {
         if (new Polynomial(a.getMonomial() + "*" + c.getMonomial()).getPolynomial().get(0).variables().toString().
                 equals(new Polynomial(b.getMonomial() + "*" + b.getMonomial()).getPolynomial().get(0).variables().toString()))
             fac = findRoots(a, b, c);
-        return new Factors(fac);
+
+        return (fac[0] == null && fac[1] == null) ? new Factors() : new Factors(fac);
     }
 
     private String[] findRoots(Monomial a, Monomial b, Monomial c) {
@@ -134,9 +181,9 @@ public class Factorization {
         var f = new String[2];
         if (d - Math.floor(d) == 0) {
             var x = reduce(-1 * b.coefficient() + d, 2 * a.coefficient());
-            f[0] = "(" + (x[1]) + reduce_power_by_half(a) + "+" + (-x[0]) + reduce_power_by_half(c) + ")";
+            f[0] = (x[1]) + reduce_power_by_half(a) + "+" + (-x[0]) + reduce_power_by_half(c) ;
             x = reduce(-1 * b.coefficient() - d, 2 * a.coefficient());
-            f[1] = "(" + (x[1]) + reduce_power_by_half(a) + "+" + (-x[0]) + reduce_power_by_half(c) + ")";
+            f[1] =  (x[1]) + reduce_power_by_half(a) + "+" + (-x[0]) + reduce_power_by_half(c) ;
         }
         return f;
     }
@@ -172,7 +219,19 @@ public class Factorization {
         return list.isEmpty() ? new TreeSet<>(List.of(1.0, n)) : list;
     }
 
-
+    private void _findFactors(int n) {
+        if (!isPrime(n)) {
+            int bound = (int) Math.sqrt(n);
+            for (int i = 1; i <= bound; i++) {
+                if (n % i == 0) {
+                    var b = n / i;
+                    System.out.println(i);
+                    if (b != i)
+                        System.out.println(b);
+                }
+            }
+        }
+    }
 
     private boolean isPrime(double n) {
         int count = 0;
@@ -198,12 +257,6 @@ public class Factorization {
         }
         return true;
     }
-
-
-
-
-
-
 
 
     private void last_two_index_combination_algo(Object[] a, int i, int size, int k, String x) {
@@ -236,7 +289,7 @@ public class Factorization {
                 var pol = new Polynomial(s1.toString());
                 var f = find_GCD_of_polynomial(pol).polynomials();
                 var gcd1 = new Polynomial(f[0]);
-                var r1 = f[1];
+                var r1 = f[0];
                 if (fo.containsKey(r1) && fo.get(r1)[1].isNoneSame(pol)) {
                     var k = new Polynomial(check_for_sign(fo.get(r1)[0].getFinalExpression() + "+" + gcd1.getFinalExpression()));
                     fo.replace(r1, new Polynomial[]{k, pol});
@@ -251,6 +304,7 @@ public class Factorization {
 
     private Factors factorization2(Polynomial polynomial) throws DomainException {
         var x = polynomial.getPolynomial();
+        System.out.println(x);
         for (int i = 0; i < x.size(); i++) {
             var y = x.get(i);
             var st = "";
@@ -258,13 +312,19 @@ public class Factorization {
                 if (i != j)
                     st = check_for_sign(st + x.get(j).getMonomial() + "+");
             }
-            if (isPerfectSquare(y.coefficient()) && find_GCD_of_polynomial(new Polynomial(st)).polynomials()[0].equals("-1")) {
-                var fr = three_element_factor(new Polynomial(st)).polynomials();
-                if (fr[0] != null && fr[1] != null && fr[0].equals(fr[1])) {
-                    var r = y.pow(0.5).getMonomial();
-                    var f1 = new PolynomialSolver(r + "+" + fr[1]).simplify();
-                    var f2 = new PolynomialSolver(r + "-" + fr[1]).simplify();
-                    return new Factors(f1, f2);
+            System.out.println(st+"            "+y.getMonomial());
+            var Case=find_GCD_of_polynomial(new Polynomial(st)).polynomials()[0];
+            if (isPerfectSquare(y.coefficient()) && (Case.equals("-1") || y.coefficient()<0)) {
+                var th_py = new Polynomial(st);
+                if (th_py.getPolynomial().size() == 3) {
+                    var fr = three_element_factor(new Polynomial(st)).polynomials();
+                    if (fr.length!=0 && fr[0] != null && fr[1] != null && fr[0].equals(fr[1])) {
+                        y=(y.coefficient()<0)?new Monomial(-1*y.coefficient(),y.variables()):y;
+                        var r = y.pow(0.5).getMonomial();
+                        var f1 = new Polynomial(fr[1]+"+"+r).getFinalExpression();
+                        var f2 = new Polynomial(fr[1]+"-"+r).getFinalExpression();
+                        return new Factors(f1, f2);
+                    }
                 }
             }
         }
@@ -322,4 +382,6 @@ public class Factorization {
     private String check_for_sign(String s) {
         return s.replace("+-", "-").replace("++", "+").replace("--", "+").replace("-+", "-");
     }
+
 }
+

@@ -2,13 +2,14 @@ package org.jmath;
 
 import org.jmath.exceptions.DomainException;
 
+import org.jmath.help.Help;
 import org.jmath.jnum.JNum;
 import org.jmath.jconvert.quantities.Angle;
 
 import java.io.*;
 import java.util.Scanner;
 
-public class Main implements Help{
+public class Main implements Help {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 

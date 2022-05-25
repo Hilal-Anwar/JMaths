@@ -106,10 +106,4 @@ public record Complex(double real, double imaginary) {
         return s.replace("+-", "-").replace("++", "+");
     }
 
-    public static void main(String[] args) {
-        Complex complex = new Complex(1,1);
-        System.out.println(complex.division(new Complex(1,-1)));
-
-    }
-
 }

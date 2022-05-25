@@ -22,7 +22,7 @@ public class JNum extends FunctionFactory {
             return super.eval(exp, angle);
         } else {
             if (super.checkForFunction(exp))
-            System.out.println("Function created successfully");
+             System.out.println("Function created successfully");
             if(super.checkAndCreateConstant(exp, angle))
                 System.out.println("Constant created successfully");
             return BigDecimal.valueOf(0);

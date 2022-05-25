@@ -4,21 +4,17 @@ package org.jmath.functions;
 import java.util.Arrays;
 
 public class MathFunction {
-    String exp;
-
-    public MathFunction(String exp) {
-        this.exp = exp;
-        System.out.println(exp);
-    }
 
     public static void main(String[] args) {
-        System.out.println(cos_A_plus_B("a", "b", "c", "d"));
+        System.out.println(cos_A_plus_B("a", "b","c"));
+        System.out.println(sin_A_plus_B("a", "b"));
+
+        System.out.println(sin_n(3, "x"));
+        System.out.println(cos_n(0, "x"));
     }
 
     public static String cos_n(long n, String variable) {
-        long start = System.currentTimeMillis();
         var x = _cos_n(n, 0, variable);
-        System.out.println(System.currentTimeMillis() - start);
         return x.substring(0, x.length() - 1);
     }
 
@@ -26,9 +22,9 @@ public class MathFunction {
         if (n - r < 0)
             return "";
         return r % 4 == 0 ?
-                isWhole_toWhole(combination(n, r)) + format_to("cos(" + v + ")", (n - r))
+                to_whole(combination(n, r)) + format_to("cos(" + v + ")", (n - r))
                         + format_to("sin(" + v + ")", r) + "-" + _cos_n(n, r + 2, v) :
-                isWhole_toWhole(combination(n, r)) + format_to("cos(" + v + ")", (n - r))
+                to_whole(combination(n, r)) + format_to("cos(" + v + ")", (n - r))
                         + format_to("sin(" + v + ")", r) + "+" + _cos_n(n, r + 2, v);
     }
 
@@ -41,9 +37,9 @@ public class MathFunction {
         if (n - r < 0)
             return "";
         return (r - 1) % 4 == 0 ?
-                isWhole_toWhole(combination(n, r)) + format_to("cos(" + v + ")", (n - r)) +
+                to_whole(combination(n, r)) + format_to("cos(" + v + ")", (n - r)) +
                         format_to("sin(" + v + ")", r) + "-" + _sin_n(n, r + 2, v) :
-                isWhole_toWhole(combination(n, r)) + format_to("cos(" + v + ")", (n - r)) +
+                to_whole(combination(n, r)) + format_to("cos(" + v + ")", (n - r)) +
                         format_to("sin(" + v + ")", r) + "+" + _sin_n(n, r + 2, v);
     }
 
@@ -59,7 +55,7 @@ public class MathFunction {
         return permutation(n, r) / factorial(r);
     }
 
-    private static String isWhole_toWhole(double n) {
+    private static String to_whole(double n) {
         if (n - Math.floor(n) == 0)
             return "" + (((int) n == 1) ? "" : (int) n);
         else return "" + n;

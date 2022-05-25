@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Product {
-    static String multiply(String s1, String s2) throws DomainException {
+    public static String multiply(String s1, String s2) throws DomainException {
         String exp;
         s1 = s1.replace("^-", "" + (char) 197);
         s2 = s2.replace("^-", "" + (char) 197);
@@ -24,7 +24,8 @@ public class Product {
         exp = m1.stream().filter(s -> s.length() > 0).map(s -> (s.charAt(0) == '-') ? s :
                 ('+' + s)).map(x1 -> m2.stream().filter(x2 -> x2.length() > 0)
                 .map(x2 -> x1.replace("" + (char) 197, "^-") + "*"
-                        + x2.replace("" + (char) 197, "^-")).collect(Collectors.joining())).collect(Collectors.joining());
+                        + x2.replace("" + (char) 197, "^-")).
+                collect(Collectors.joining())).collect(Collectors.joining());
         return new Polynomial(exp).getFinalExpression();
     }
 }

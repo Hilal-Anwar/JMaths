@@ -14,6 +14,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.jmath.core.CharSet.*;
+
 class FunctionFactory extends FunctionManager {
     /**
      * @author Helal Anwar
@@ -23,7 +25,7 @@ class FunctionFactory extends FunctionManager {
      */
     private final HashSet<String> coreFunction = new HashSet<>();
     private final HashSet<String> coreConstants = new HashSet<>();
-    private int t = 200, k = 200;
+    //private int t = 200, k = 200;
 
     FunctionFactory() {
         loadConstants();
@@ -92,7 +94,7 @@ class FunctionFactory extends FunctionManager {
         String returnValue = exp.substring(exp.indexOf('{') + 1, exp.indexOf('}'));
         String[] pramArray = parameters.split(",");
         TreeMap<String, Character> treeMap = Arrays.stream(pramArray).
-                collect(Collectors.toMap(s -> s, s -> temKey(), (a1, b) -> b, TreeMap::new));
+                collect(Collectors.toMap(s -> s, s -> CharSet.getDummyKey(), (a1, b) -> b, TreeMap::new));
         LinkedHashMap<Character, String> list = IntStream.range(0, pramArray.length).
                 boxed().collect(Collectors.toMap(i -> treeMap.get(pramArray[i]), i -> a[i], (a1, b) -> b, LinkedHashMap::new));
         Arrays.sort(pramArray, Comparator.comparingInt(String::length));
@@ -102,8 +104,7 @@ class FunctionFactory extends FunctionManager {
         returnValue = super.format(returnValue, new ArrayList<>(treeMap.values()));
         for (char w : list.keySet()) {
             returnValue = returnValue.replace("" + w, list.get(w));
-        }
-        resetTempKey();
+        } CharSet.resetDummyKey();
         return returnValue;
     }
 
@@ -111,7 +112,7 @@ class FunctionFactory extends FunctionManager {
         String exp = functions.get(key).info();
         String variable = exp.substring(exp.indexOf('(') + 1, exp.indexOf(')')).split(",")[1];
         String returnValue = exp.substring(exp.indexOf('{') + 1, exp.indexOf('}'));
-        Character k = temKey();
+        Character k = CharSet.getDummyKey();
         returnValue = returnValue.replace(variable, k + "");
         int start = Integer.parseInt(a[0]);
         int end = Integer.parseInt(a[1]);
@@ -120,10 +121,10 @@ class FunctionFactory extends FunctionManager {
         for (int i = start; i <= end; i++) {
             x = x.add(format_eval(returnValue.replace("" + k, "" + i), getType()));
         }
-        resetTempKey();
+        CharSet.resetDummyKey();
         return x.toString();
     }
-
+/*
     private void resetTempKey() {
         k = t;
     }
@@ -137,7 +138,7 @@ class FunctionFactory extends FunctionManager {
     private Character temKey() {
         k++;
         return (char) k;
-    }
+    }*/
 
     private void loadConstants() {
         constants.put(getCharKey(), new Constants("pi", "Pi", BigDecimal.valueOf(Math.PI)));
