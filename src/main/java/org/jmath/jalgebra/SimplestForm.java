@@ -48,6 +48,7 @@ public class SimplestForm {
             }
 
         }
+        System.out.println("Start");
         System.out.println(n_un);
         System.out.println(d_un);
         System.out.println(dr);

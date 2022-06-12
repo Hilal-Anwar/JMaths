@@ -1,17 +1,22 @@
 package org.jmath.core;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 public class Fraction {
     private final String number;
     private int bar = 0;
     private boolean condition = false;
+    private static String sign;
 
     public Fraction(String input) {
+        input=(!input.contains("."))?input+".0":input;
+        sign=(input.charAt(0)=='-')?"-":"";
+        input=(input.charAt(0)=='-')?input.substring(1):input;
         if (!input.contains("E")) {
             String num = input.substring(input.indexOf('.') + 1);
             String[] a = num.length() >= 4 ? getPatterns(num) : new String[]{};
-            System.out.println(Arrays.toString(a));
+           // System.out.println(Arrays.toString(a));
             if ((a.length > 0) && !a[0].equals("9")) {
                 this.bar = a[0].length();
                 String scr = "";
@@ -75,7 +80,7 @@ public class Fraction {
         }
         long a = Long.parseLong(rational);
         long b = (long) Math.pow(10, l - pos);
-        return a / Hcf(a, b) + "/" + b / Hcf(a, b);
+        return sign+a / Hcf(a, b) + "/" + b / Hcf(a, b);
     }
 
     private static String P_by_QFormTillInfinity(String rational, int bar) {
@@ -92,10 +97,9 @@ public class Fraction {
         k = (long) Math.pow(10, bar) - 1;
         long a = x * k + y;
         long b = k * ((long) Math.pow(10, (l - pos - bar)));
-        return a / Hcf(a, b) + "/" + b / Hcf(a, b);
+        return sign+a / Hcf(a, b) + "/" + b / Hcf(a, b);
     }
-
-    private static long Hcf(long a, long b) {
+    static long Hcf(long a, long b) {
         long max = Math.max(a, b);
         long min = Math.min(a, b);
         while (max % min != 0) {
@@ -105,7 +109,16 @@ public class Fraction {
         }
         return min;
     }
-
+    static BigInteger Hcf(BigInteger a,BigInteger b){
+        var max=a.max(b);
+        var min=a.min(b);
+        while (!max.remainder(min).equals(new BigInteger("0"))){
+            var tem=min;
+            min=max.remainder(min);
+            max=tem;
+        }
+        return min;
+    }
     public String getValues() {
         if (condition) return this.number;
         return this.bar != 0 ? P_by_QFormTillInfinity(this.number, bar) : P_by_QForm(number);

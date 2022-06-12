@@ -3,6 +3,8 @@ package org.jmath.jalgebra;
 import org.jmath.core.Operators;
 import org.jmath.exceptions.DomainException;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -141,9 +143,13 @@ public class Polynomial {
                     tem = (tem.equals("")) ? "1" : tem;
                     tem = (tem.charAt(0) == '^') ? tem.substring(1) : tem;
                     if (variables.containsKey(base))
-                        variables.replace(base, Double.parseDouble(""+(new Operators(tem)._eval().doubleValue()+ variables.get(base))));
-                    else
-                        variables.put(base,  Double.parseDouble(""+new Operators(tem)._eval().doubleValue()));
+                    {
+                        variables.replace(base, Double.parseDouble(""+(new BigDecimal(new Operators(tem)._eval().decimal_part()).doubleValue()+
+                                variables.get(base))));
+                    }
+                    else{
+                        variables.put(base,  Double.parseDouble(""+(new BigDecimal(new Operators(tem)._eval().decimal_part()).doubleValue())));
+                    }
                     if (i < seed.length())
                         base = seed.charAt(i) + "";
                     tem = "";
@@ -151,7 +157,7 @@ public class Polynomial {
             }
         }
         return (seed.isBlank()) ? new Monomial(0.0, new TreeMap<>()) :
-                new Monomial(Double.parseDouble(""+new Operators(coefficient)._eval().doubleValue()), variables);
+                new Monomial(Double.parseDouble(""+new BigDecimal(new Operators(coefficient)._eval().decimal_part()).round(MathContext.DECIMAL64)), variables);
     }
 
     public ArrayList<Monomial> getPolynomial() {

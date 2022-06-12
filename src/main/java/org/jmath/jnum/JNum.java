@@ -1,5 +1,6 @@
 package org.jmath.jnum;
 
+import org.jmath.core.Fraction;
 import org.jmath.exceptions.DomainException;
 import org.jmath.exceptions.FunctionFormatException;
 import org.jmath.exceptions.KeyWordException;
@@ -37,4 +38,8 @@ public class JNum extends FunctionFactory {
     public String getFinalExpression() {
         return super.getFinalExpression();
     }
+    public Fraction getFraction(String v){
+        return new Fraction(v);
+    }
 }
+

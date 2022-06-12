@@ -1,4 +1,5 @@
 package org.jmath.jalgebra;
 
-public class Forms {
+public class AlgebraicForms {
+
 }

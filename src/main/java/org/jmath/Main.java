@@ -40,18 +40,22 @@ public class Main implements Help {
                 } else if (expression.equalsIgnoreCase("cls")) cls();
                 else if (!expression.equalsIgnoreCase("/exit")) {
                     try {
-                        System.out.println("Answer : " + c.eval(expression, type));
+                        String an=c.eval(expression, type).toString();
+                        System.out.println("Answer : " + an);
                         System.out.println(c.getFinalExpression());
+                        System.out.println(c.getRationalForm());
                         long en=System.currentTimeMillis();
                         System.out.println(en-st);
                     } catch (DomainException | ArithmeticException e) {
                         System.err.println(e.getMessage());
                     } catch (NumberFormatException e) {
                         System.err.println("Wrong format");
+                        e.printStackTrace();
                     } catch (StackOverflowError e) {
                         System.err.println("Memory Overflow.Too large value");
                     } catch (Exception e) {
                         System.err.println("Bad expression");
+                        e.printStackTrace();
                     }
                 }
             } while (!expression.equalsIgnoreCase("/exit"));
