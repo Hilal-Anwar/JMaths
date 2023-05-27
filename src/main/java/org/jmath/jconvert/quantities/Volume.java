@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Volume {
+import org.jmath.jconvert.Conversion;
+
+public enum Volume implements Conversion {
     cubic_kilometre(1e+9), cubic_hectometre(1000000), cubic_decametre(1000),
     cubic_metre(1.0), cubic_decimetre(0.001), cubic_centimetre(1e-6),
     cubic_millimetre(1e-9), gigalitre(1000000), megalitre(1000), kilolitre(1.0), hectolitre(0.1),

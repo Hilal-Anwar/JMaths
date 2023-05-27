@@ -1,6 +1,9 @@
 package org.jmath.jconvert.quantities;
 
-public enum Temperature {
+import org.jmath.jconvert.Conversion;
+import org.jmath.jconvert.JConverter;
+
+public enum Temperature implements Conversion{
     kelvin(1.0),degree_Celsius(1.0),
     degree_Rankine(1.0),degree_Fahrenheit(1.0);
     private final double v;
@@ -11,4 +14,6 @@ public enum Temperature {
     public double getV() {
         return this.v;
     }
+
+
 }

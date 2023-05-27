@@ -37,28 +37,34 @@ class FunctionManager {
 
     private String solve_parenthesis(String exp) throws DomainException {
         int start, end;
-        String ans="";
+        String ans = "";
         while (exp.contains("(") || exp.contains(")")) {
             start = exp.lastIndexOf('(');
             end = exp.indexOf(')', exp.lastIndexOf('('));
             String x = exp.substring(start, end + 1);
             String val = exp.substring(start + 1, end);
-            if (!val.contains(",")){
-                val=val.replace("--","+").replace("+-","-").replace("-+","-");
-                var operator=new Operators(val, constants)._eval();
-                ans = operator.fraction_part()!=null?operator.fraction_part():operator.decimal_part();
-                if (start != 0 && end!=exp.length()-1 && exp.charAt(end+1)=='^' &&  !functions.containsKey(exp.charAt(start - 1))){
-                  String pow=getPower(exp,end+2);
-                  ans=solve_exponent(ans,pow);
-                  x=x+"^"+pow;
+            if (!val.contains(",") ) {
+                val = val.replace("--", "+").replace("+-", "-").replace("-+", "-");
+                if(containsOperator(val)){
+                var operator = new Operators(val, constants)._eval();
+                ans = operator.fraction_part() != null ? operator.fraction_part() : operator.decimal_part();
+                }
+                else ans=val;
+                //System.out.println("fgd"+!functions.containsKey(exp.charAt(start - 1)));
+                if (start != 0 && end != exp.length() - 1 && exp.charAt(end + 1) == '^' && !functions.containsKey(exp.charAt(start - 1))) {
+                    String pow = getPower(exp, end + 2);
+                    ans = solve_exponent(ans, pow);
+                    x = x + "^" + pow;
                 }
             }
             if (start != 0) {
                 char at = exp.charAt(start - 1);
                 if (functions.containsKey(at)) {
+                    System.out.println(ans);
+                    //ans = fmt(ans);
                     exp = !val.contains(",") ?
                             exp.replace(at + x, "(" +
-                                    functions.get(at).functions().evaluate(at, ans.toString()) + ")") :
+                                    functions.get(at).functions().evaluate(at, ans) + ")") :
                             exp.replace(at + x, "(" +
                                     functions.get(at).functions().evaluate(at, val.split(",")) + ")");
                     continue;
@@ -69,22 +75,33 @@ class FunctionManager {
         return exp;
     }
 
+    private String fmt(String ans) {
+        return ans.contains("/") ? ans.substring(0, ans.indexOf('/')) : ans;
+    }
+
+    private boolean containsOperator(String exp) {
+        return (exp.contains("+") ||
+                exp.contains("-") ||
+                exp.contains("*") ||
+                exp.contains("/") ||
+                exp.contains("^"));
+    }
+
     private String solve_exponent(String x, String pow) {
 
-        var z=x.split("/");
-        String p="",q="";
-        if (z.length==2){
+        var z = x.split("/");
+        String p, q;
+        if (z.length == 2) {
             try {
-                p=BigMath.power(new BigDecimal(z[0]),new BigDecimal(pow)).toString();
-                q=BigMath.power(new BigDecimal(z[1]),new BigDecimal(pow)).toString();
-                return p+"/"+q;
+                p = BigMath.power(new BigDecimal(z[0]), new BigDecimal(pow)).toString();
+                q = BigMath.power(new BigDecimal(z[1]), new BigDecimal(pow)).toString();
+                return p + "/" + q;
             } catch (DomainException e) {
                 throw new RuntimeException(e);
             }
-        }
-        else {
+        } else {
             try {
-                p=BigMath.power(new BigDecimal(z[0]),new BigDecimal(pow)).toString();
+                p = BigMath.power(new BigDecimal(z[0]), new BigDecimal(pow)).toString();
                 return p;
             } catch (DomainException e) {
                 throw new RuntimeException(e);
@@ -94,12 +111,12 @@ class FunctionManager {
     }
 
     private String getPower(String exp, int i) {
-        StringBuilder pow= new StringBuilder();
-        if (exp.charAt(i)=='-'){
+        StringBuilder pow = new StringBuilder();
+        if (exp.charAt(i) == '-') {
             pow = new StringBuilder("-");
             i++;
         }
-        while (i!=exp.length() && Character.isDigit(exp.charAt(i))){
+        while (i != exp.length() && Character.isDigit(exp.charAt(i))) {
             pow.append(exp.charAt(i));
             i++;
         }
@@ -115,10 +132,10 @@ class FunctionManager {
         }
         return list;
     }
+
     private String add_or_remove_parenthesis(String exp) {
         int start = 0, end = 0;
-        if (exp.contains("(") || exp.contains(")"))
-        {
+        if (exp.contains("(") || exp.contains(")")) {
             for (int i = 0; i < exp.length(); i++) {
                 switch (exp.charAt(i)) {
                     case '(' -> start++;
@@ -127,8 +144,7 @@ class FunctionManager {
             }
             if ((start - end) > 0) {
                 exp = exp + ")".repeat(Math.max(0, (start - end)));
-            }
-            else if ((start - end) < 0) {
+            } else if ((start - end) < 0) {
                 exp = exp.substring(0, (exp.length() - (end - start)));
             }
         }
@@ -148,19 +164,27 @@ class FunctionManager {
     }
 
     private boolean condition1(int i, String exp, ArrayList<Character> myList) {
-        return (i != 0) && (functions.containsKey(exp.charAt(i)) || constants.containsKey(exp.charAt(i)) || myList.contains(exp.charAt(i)))
+        return (i != 0) && (functions.containsKey(exp.charAt(i)) ||
+                constants.containsKey(exp.charAt(i)) ||
+                myList.contains(exp.charAt(i)))
                 && (Character.isDigit(exp.charAt(i - 1)) || exp.charAt(i - 1) == ')' ||
                 constants.containsKey(exp.charAt(i - 1)) || myList.contains(exp.charAt(i - 1)));
     }
 
     private boolean condition2(int i, String exp, ArrayList<Character> myList) {
-        return (i != 0 && Character.isDigit(exp.charAt(i)) && exp.charAt(i - 1) == ')') || (i != 0 && Character.isDigit(exp.charAt(i)) &&
-                (constants.containsKey(exp.charAt(i - 1)) || myList.contains(exp.charAt(i - 1)) || (exp.charAt(i - 1) == '!')));
+        return (i != 0 && Character.isDigit(exp.charAt(i)) && exp.charAt(i - 1) == ')')
+                || (i != 0 && Character.isDigit(exp.charAt(i)) &&
+                (constants.containsKey(exp.charAt(i - 1))
+                        || myList.contains(exp.charAt(i - 1)) ||
+                        (exp.charAt(i - 1) == '!')));
     }
 
     private boolean condition3(int i, String exp, ArrayList<Character> myList) {
-        return (i != 0 && exp.charAt(i) == '(' && (Character.isDigit(exp.charAt(i - 1)) || myList.contains(exp.charAt(i - 1)) ||
-                constants.containsKey(exp.charAt(i - 1)))) || (i != 0 && exp.charAt(i) == '(' && exp.charAt(i - 1) == ')');
+        return (i != 0 && exp.charAt(i) == '(' &&
+                (Character.isDigit(exp.charAt(i - 1)) ||
+                        myList.contains(exp.charAt(i - 1)) ||
+                        constants.containsKey(exp.charAt(i - 1)))) ||
+                (i != 0 && exp.charAt(i) == '(' && exp.charAt(i - 1) == ')');
     }
 
     private String make_consumable(String exp) {
@@ -177,31 +201,33 @@ class FunctionManager {
         exp = exp.replace("%", "/100*");
         exp = format(exp, new ArrayList<>());
         exp = solve_parenthesis(exp);
-        exp=exp.replace("--","+").replace("+-","-").replace("-+","-");
-        finalResult=new Operators(exp, this.constants)._eval();
+        exp = exp.replace("--", "+").replace("+-", "-").replace("-+", "-");
+        finalResult = new Operators(exp, this.constants)._eval();
         return new BigDecimal(finalResult.decimal_part()).round(MathContext.DECIMAL64);
     }
-    public String getRationalForm(){
-       if (finalResult.fraction_part()!=null){
-           var frac=finalResult.fraction_part().split("/");
-           var p=new BigInteger(frac[0]);
-           var q=new BigInteger(frac[1]);
-           if (p.equals(p.max(q))){
-               var Q_R=p.divideAndRemainder(q);
-               return Q_R[0]+" "+Q_R[1]+"/"+q;
-           }
-           else return p+"/"+q;
-       }
-       else {
-           return new BigDecimal(finalResult.decimal_part()).round(MathContext.DECIMAL64).toString();
-       }
+
+    public String getRationalForm() {
+        if (finalResult == null)
+            return "0/1";
+        if (finalResult.fraction_part() != null) {
+            var frac = finalResult.fraction_part().split("/");
+            var p = new BigInteger(frac[0]);
+            var q = new BigInteger(frac[1]);
+            if (p.equals(p.max(q))) {
+                var Q_R = p.divideAndRemainder(q);
+                return Q_R[0] + " " + Q_R[1] + "/" + q;
+            } else return p + "/" + q;
+        } else {
+            return new BigDecimal(finalResult.decimal_part()).round(MathContext.DECIMAL64).toString();
+        }
     }
+
     BigDecimal format_eval(String exp, Angle type) throws DomainException {
         this.type = type;
         exp = exp.replace("%", "/100*");
         exp = solve_parenthesis(exp);
-        exp=exp.replace("--","+").replace("+-","-").replace("-+","-");
-        finalResult=new Operators(exp, this.constants)._eval();
+        exp = exp.replace("--", "+").replace("+-", "-").replace("-+", "-");
+        finalResult = new Operators(exp, this.constants)._eval();
         return new BigDecimal(finalResult.decimal_part()).round(MathContext.DECIMAL64);
     }
 

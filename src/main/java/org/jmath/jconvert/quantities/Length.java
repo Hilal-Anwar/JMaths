@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Length {
+import org.jmath.jconvert.Conversion;
+
+public enum Length implements Conversion {
     meter(1.0),angstrom(1.0e-10),
     mile(1.6*1000),furlong(200),
     chain(20),rod(5.0),pole(5.0),

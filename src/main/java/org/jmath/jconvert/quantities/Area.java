@@ -1,5 +1,8 @@
 package org.jmath.jconvert.quantities;
-public enum Area{
+
+import org.jmath.jconvert.Conversion;
+
+public enum Area implements Conversion {
     square_kilometre(1000000.0), square_hectometre(10000), square_decametre(100),
     square_metre(1), square_decimetre(0.01), square_centimetre(0.0001),
     square_millimetre(1E-6), hectare(10000), square_mile(2.59e+6), acre(4046.86),
@@ -12,8 +15,5 @@ public enum Area{
 
     public double getV() {
         return this.v;
-    }
-    public double convertTo(double v,Area t,Area t1){
-        return 0.0;
     }
 }

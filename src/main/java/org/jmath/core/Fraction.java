@@ -102,6 +102,8 @@ public class Fraction {
     static long Hcf(long a, long b) {
         long max = Math.max(a, b);
         long min = Math.min(a, b);
+        if (min==0)
+            return max;
         while (max % min != 0) {
             long temp = min;
             min = max % min;
@@ -112,6 +114,8 @@ public class Fraction {
     static BigInteger Hcf(BigInteger a,BigInteger b){
         var max=a.max(b);
         var min=a.min(b);
+        if (min.equals(BigInteger.ZERO))
+            return max;
         while (!max.remainder(min).equals(new BigInteger("0"))){
             var tem=min;
             min=max.remainder(min);

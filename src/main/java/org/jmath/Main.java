@@ -1,12 +1,11 @@
 package org.jmath;
 
-import org.jmath.exceptions.DomainException;
-
 import org.jmath.help.Help;
+import org.jmath.jconvert.JConverter;
+import org.jmath.jconvert.quantities.*;
 import org.jmath.jnum.JNum;
-import org.jmath.jconvert.quantities.Angle;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main implements Help {
@@ -24,7 +23,7 @@ public class Main implements Help {
             do {
                 System.out.println();
                 expression = in.nextLine();
-                long st=System.currentTimeMillis();
+                long st = System.currentTimeMillis();
                 if (expression.equalsIgnoreCase("/help")) System.out.println(help);
                 else if (expression.equalsIgnoreCase("a/T"))
                     System.out.println("Your measurement type is : " + type);
@@ -40,20 +39,22 @@ public class Main implements Help {
                 } else if (expression.equalsIgnoreCase("cls")) cls();
                 else if (!expression.equalsIgnoreCase("/exit")) {
                     try {
-                        String an=c.eval(expression, type).toString();
+                        String an = c.eval(expression, type).toString();
+                        JConverter jConverter=new JConverter();
+                        System.out.println(jConverter.convertTo(6, Metric.atto,Volume.cubic_centimetre,Metric.exa,Volume.firkin));
                         System.out.println("Answer : " + an);
                         System.out.println(c.getFinalExpression());
                         System.out.println(c.getRationalForm());
-                        long en=System.currentTimeMillis();
-                        System.out.println(en-st);
-                    } catch (DomainException | ArithmeticException e) {
+                        long en = System.currentTimeMillis();
+                        System.out.println(en - st);
+                    } /*catch (DomainException | ArithmeticException e) {
                         System.err.println(e.getMessage());
                     } catch (NumberFormatException e) {
                         System.err.println("Wrong format");
                         e.printStackTrace();
                     } catch (StackOverflowError e) {
                         System.err.println("Memory Overflow.Too large value");
-                    } catch (Exception e) {
+                    } */ catch (Exception e) {
                         System.err.println("Bad expression");
                         e.printStackTrace();
                     }

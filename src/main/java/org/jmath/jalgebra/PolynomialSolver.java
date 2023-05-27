@@ -469,7 +469,8 @@ public class PolynomialSolver {
             String y = m1.get(i);
             if (y.contains("/")) {
                 String x = y.substring(y.indexOf("/") + 1);
-                y = y.replace("/" + x, ("*" + init.replaceFirst(special_replace(x), "")).replace("**", "*"));
+                y = y.replace("/" + x, ("*" + init.replaceFirst(special_replace(x), "")).
+                        replace("**", "*"));
                 y = (y.charAt(y.length() - 1) == '*') ? y.substring(0, y.length() - 1) : y;
             } else {
                 y = y + "*" + init;

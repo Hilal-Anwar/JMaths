@@ -33,8 +33,11 @@ public record EquationSolver(Polynomial solver)
                 d = val.get(1) != null ? val.get(1) : 0, e = val.get(0) != null ? val.get(0) : 0;
         double A = c / a - (3 * (b * b) / (8 * a * a));
         double B = d / a - ((b * c) / (2 * a * a)) + ((b * b * b) / (8 * a * a * a));
-        double C = e / a - ((b * d) / (4 * a * a)) + ((b * b * c) / (16 * a * a * a)) - ((3 * b * b * b * b) / (256 * a * a * a * a));
-        var value = new EquationSolver(new Polynomial(check_for_sign(8 + "s3-" + (4 * A) + "s2-" + (8 * C) + "s+" + (4 * A * C - B * B)))).
+        double C = e / a - ((b * d) / (4 * a * a)) + ((b * b * c) /
+                (16 * a * a * a)) - ((3 * b * b * b * b) / (256 * a * a * a * a));
+        var value = new EquationSolver(
+                new Polynomial(check_for_sign(8 + "s3-" +
+                        (4 * A) + "s2-" + (8 * C) + "s+" + (4 * A * C - B * B)))).
                 solve_equation()[0];
         if (value instanceof Complex complex) {
             var num = complex.product(new Complex(2, 0)).subtract(new Complex(A, 0)).root(2);

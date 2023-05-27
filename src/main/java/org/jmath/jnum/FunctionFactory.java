@@ -18,6 +18,7 @@ import static org.jmath.core.CharSet.*;
 
 class FunctionFactory extends FunctionManager {
     /**
+     * @2022-23
      * @author Helal Anwar
      * @see BigInteger
      * @see BigDecimal
@@ -94,9 +95,13 @@ class FunctionFactory extends FunctionManager {
         String returnValue = exp.substring(exp.indexOf('{') + 1, exp.indexOf('}'));
         String[] pramArray = parameters.split(",");
         TreeMap<String, Character> treeMap = Arrays.stream(pramArray).
-                collect(Collectors.toMap(s -> s, s -> CharSet.getDummyKey(), (a1, b) -> b, TreeMap::new));
-        LinkedHashMap<Character, String> list = IntStream.range(0, pramArray.length).
-                boxed().collect(Collectors.toMap(i -> treeMap.get(pramArray[i]), i -> a[i], (a1, b) -> b, LinkedHashMap::new));
+                collect(Collectors.toMap(s -> s, 
+                s -> CharSet.getDummyKey(), (a1, b) -> b, TreeMap::new));
+        LinkedHashMap<Character, String> list =
+                 IntStream.range(0, pramArray.length).
+                boxed().collect(Collectors.toMap(i -> 
+                treeMap.get(pramArray[i]), 
+                i -> a[i], (a1, b) -> b, LinkedHashMap::new));
         Arrays.sort(pramArray, Comparator.comparingInt(String::length));
         for (String s : pramArray) {
             returnValue = returnValue.replace(s, treeMap.get(s).toString());
@@ -110,8 +115,10 @@ class FunctionFactory extends FunctionManager {
 
     private String sum(char key, String[] a) throws DomainException {
         String exp = functions.get(key).info();
-        String variable = exp.substring(exp.indexOf('(') + 1, exp.indexOf(')')).split(",")[1];
-        String returnValue = exp.substring(exp.indexOf('{') + 1, exp.indexOf('}'));
+        String variable = exp.substring(exp.indexOf('(') + 1, 
+        exp.indexOf(')')).split(",")[1];
+        String returnValue = exp.substring(exp.indexOf('{') + 1, 
+        exp.indexOf('}'));
         Character k = CharSet.getDummyKey();
         returnValue = returnValue.replace(variable, k + "");
         int start = Integer.parseInt(a[0]);
@@ -119,7 +126,8 @@ class FunctionFactory extends FunctionManager {
         returnValue = format(returnValue, new ArrayList<>(List.of(k)));
         BigDecimal x = new BigDecimal(0);
         for (int i = start; i <= end; i++) {
-            x = x.add(format_eval(returnValue.replace("" + k, "" + i), getType()));
+            x = x.add(format_eval(returnValue.
+            replace("" + k, "" + i), getType()));
         }
         CharSet.resetDummyKey();
         return x.toString();
@@ -241,7 +249,6 @@ class FunctionFactory extends FunctionManager {
             throw new KeyWordException("Key words are not allowed inside value");
         else return true;
     }
-
     private boolean isValidParameter(String parameterName) throws KeyWordException, FunctionFormatException {
         if (parameterName.equals("")
                 || parameterName.contains("=") || parameterName.contains(":")

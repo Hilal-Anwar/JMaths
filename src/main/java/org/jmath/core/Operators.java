@@ -5,6 +5,7 @@ import org.jmath.exceptions.DomainException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -15,6 +16,7 @@ public record Operators(String exp, Map<Character, Constants> constants) {
     private static final String k4 = "" + (char) 198;
     private static final String k5 = "" + (char) 199;
     private static String[] memory;
+
     public Operators {
         String val = substitute(exp);
         memory = val.split("\\+");
@@ -23,8 +25,12 @@ public record Operators(String exp, Map<Character, Constants> constants) {
     }
 
     public FinalResult _eval() throws DomainException {
-        var _evl=solve();
+        var _evl = solve();
         return getRationalPartIfPossible(_evl);
+    }
+
+    public String eval() throws DomainException {
+        return solve().decimal_part;
     }
 
     public Operators(String exp) {
@@ -52,7 +58,7 @@ public record Operators(String exp, Map<Character, Constants> constants) {
 
     private Result solve() throws DomainException {
         Result result;
-        Frac fraction=new Frac(new BigDecimal(0),new BigDecimal(1));
+        Frac fraction = new Frac(new BigDecimal(0), new BigDecimal(1));
         BigDecimal final_value = new BigDecimal("0");
         for (String x : memory) {
             result = new Result("0", null);
@@ -69,11 +75,11 @@ public record Operators(String exp, Map<Character, Constants> constants) {
             x = (x.contains("!")) ? factorial(x) : x;
             final_value = final_value.add(new BigDecimal(x));
             if (result.fraction_part() == null)
-                result=new Result(x, new Frac(new BigDecimal(x), new BigDecimal(1)));
-               fraction= add_rational_number(fraction,result.fraction_part());
+                result = new Result(x, new Frac(new BigDecimal(x), new BigDecimal(1)));
+            fraction = add_rational_number(fraction, result.fraction_part());
 
         }
-        return new Result(final_value.toString(),fraction);
+        return new Result(final_value.toString(), fraction);
     }
 
     private String add_constant_value(String x) {
@@ -167,31 +173,40 @@ public record Operators(String exp, Map<Character, Constants> constants) {
 
     private record Result(String decimal_part, Frac fraction_part) {
     }
+
     public record FinalResult(String decimal_part, String fraction_part) {
     }
-    private Frac add_rational_number(Frac f1,Frac f2){
+
+    private Frac add_rational_number(Frac f1, Frac f2) {
         return new Frac(f1.numerator().multiply(f2.denominator()).add(f2.numerator().multiply(f1.denominator())),
                 f1.denominator().multiply(f2.denominator()));
     }
-    FinalResult getRationalPartIfPossible(Result result){
-        var fraction=result.fraction_part();
-        if(!fraction.numerator().toString().contains(".") && !fraction.denominator().toString().contains(".")){
-            if (fraction.numerator().toString().length()<15 && fraction.denominator().toString().length()<15) {
-                var _gcd=Fraction.Hcf(fraction.numerator().toBigInteger(),fraction.denominator().toBigInteger());
-            return new FinalResult(result.decimal_part(),fraction.numerator().toBigInteger().divide(_gcd)+"/"
-                    +(fraction.denominator().toBigInteger().divide(_gcd)));
+
+    FinalResult getRationalPartIfPossible(Result result) {
+        var fraction = result.fraction_part();
+        if (!fraction.numerator().toString().contains(".") && !fraction.denominator().toString().contains(".")) {
+            if (fraction.numerator().toString().length() < 20 && fraction.denominator().toString().length() < 20) {
+                var _gcd = Fraction.Hcf(fraction.numerator().toBigInteger(), fraction.denominator().toBigInteger());
+                return new FinalResult(result.decimal_part(), fraction.numerator().toBigInteger().divide(_gcd) + "/"
+                        + (fraction.denominator().toBigInteger().divide(_gcd)));
             }
-            return new FinalResult(result.decimal_part(),null);
+            return new FinalResult(result.decimal_part(), null);
+        } else if (!fraction.numerator().toString().equals("0.0")) {
+            var p = new Fraction(fraction.numerator().toString()).getValues().split("/");
+            var q = new Fraction(fraction.denominator().toString()).getValues().split("/");
+            if (q.length > 1 && p.length > 1) {
+                var m = new BigInteger(p[0]).multiply(new BigInteger(q[1]));
+                var n = new BigInteger(p[1]).multiply(new BigInteger(q[0]));
+                return new FinalResult(result.decimal_part(),
+                        m.divide(Fraction.Hcf(m, n)) + "/"
+                                + n.divide(Fraction.Hcf(m, n)));
+            } else {
+                var v = new BigDecimal(p[0]).divide(new BigDecimal(q[0]), MathContext.DECIMAL64);
+                var f = new Fraction(v.toString()).getValues();
+                return new FinalResult(result.decimal_part, f);
+            }
         }
-        else {
-            var p=new Fraction(fraction.numerator().toString()).getValues().split("/");
-            var q=new Fraction(fraction.denominator().toString()).getValues().split("/");
-            var m=new BigInteger(p[0]).multiply(new BigInteger(q[1]));
-            var n=new BigInteger(p[1]).multiply(new BigInteger(q[0]));
-            return new FinalResult(result.decimal_part(),
-                    m.divide(Fraction.Hcf(m,n))+"/"
-                    +n.divide(Fraction.Hcf(m,n)));
-        }
+        return new FinalResult(result.decimal_part, "0/1");
 
     }
 

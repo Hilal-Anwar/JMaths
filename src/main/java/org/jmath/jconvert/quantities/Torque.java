@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Torque {
+import org.jmath.jconvert.Conversion;
+
+public enum Torque implements Conversion {
     newton_metre(1.0),
     kilogram_metre(9.80665),
     pound_foot(1.3558),

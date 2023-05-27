@@ -144,11 +144,13 @@ public class Polynomial {
                     tem = (tem.charAt(0) == '^') ? tem.substring(1) : tem;
                     if (variables.containsKey(base))
                     {
-                        variables.replace(base, Double.parseDouble(""+(new BigDecimal(new Operators(tem)._eval().decimal_part()).doubleValue()+
+                        variables.replace(base, Double.parseDouble(""+(new BigDecimal(new Operators(tem).
+                                eval()).doubleValue()+
                                 variables.get(base))));
                     }
                     else{
-                        variables.put(base,  Double.parseDouble(""+(new BigDecimal(new Operators(tem)._eval().decimal_part()).doubleValue())));
+                        variables.put(base,  Double.parseDouble(""+(new BigDecimal(new Operators(tem).
+                                eval()).doubleValue())));
                     }
                     if (i < seed.length())
                         base = seed.charAt(i) + "";
@@ -157,7 +159,7 @@ public class Polynomial {
             }
         }
         return (seed.isBlank()) ? new Monomial(0.0, new TreeMap<>()) :
-                new Monomial(Double.parseDouble(""+new BigDecimal(new Operators(coefficient)._eval().decimal_part()).round(MathContext.DECIMAL64)), variables);
+                new Monomial(Double.parseDouble(""+new BigDecimal(new Operators(coefficient).eval()).round(MathContext.DECIMAL64)), variables);
     }
 
     public ArrayList<Monomial> getPolynomial() {

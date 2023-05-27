@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Mass {
+import org.jmath.jconvert.Conversion;
+
+public enum Mass implements Conversion {
     gram(1.0),tonne(1000000),
     long_ton(2240*450),short_ton(2000*450),long_hundredweight(51000),
     short_hundredweight(45000),long_quarter(28000),short_quarter(13000),

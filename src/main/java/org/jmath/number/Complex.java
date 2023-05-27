@@ -6,7 +6,6 @@ import static java.lang.Math.*;
 
 public record Complex(double real, double imaginary) {
 
-
     public double argument() {
         return atan(imaginary / real);
     }

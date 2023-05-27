@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Density {
+import org.jmath.jconvert.Conversion;
+
+public enum Density implements Conversion {
     kilogram_per_cubic_meter(1.0),
     gram_per_cubic_meter(0.001),
     slug_per_cubic_centimeter(515.4),

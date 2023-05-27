@@ -1,9 +1,11 @@
 package org.jmath.jconvert.quantities;
 
+import org.jmath.jconvert.Conversion;
+
 public enum Viscosity {
     ;
 
-    public enum Dynamic {
+    public enum Dynamic implements Conversion {
         pascal_second(10),
         kilogram_force_second_per_square_metre(9806.6501248),
         poundal_second_per_square_foot(1488.164435),
@@ -25,7 +27,7 @@ public enum Viscosity {
         }
     }
 
-    public enum Kinematic {
+    public enum Kinematic implements Conversion {
         centi_stokes(1.0),
         stokes(0.01),
         square_centimetre_per_second(100),

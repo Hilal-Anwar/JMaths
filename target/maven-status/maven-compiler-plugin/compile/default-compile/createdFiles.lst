@@ -23,11 +23,13 @@ org\jmath\jconvert\quantities\Mass.class
 org\jmath\jconvert\quantities\Viscosity.class
 org\jmath\jnum\FunctionManager.class
 org\jmath\jalgebra\Division.class
+org\jmath\core\Operators$Result.class
 org\jmath\jalgebra\SimplifiedAlgebraicFraction.class
 org\jmath\exceptions\FunctionFormatException.class
 org\jmath\jconvert\quantities\Viscosity$Dynamic.class
 org\jmath\core\Function.class
 org\jmath\core\Operators.class
+org\jmath\core\Operators$Frac.class
 org\jmath\jnum\Functions.class
 org\jmath\functions\AlgebraicFunctionManager.class
 org\jmath\jconvert\quantities\Density.class
@@ -55,6 +57,7 @@ org\jmath\jalgebra\FormulaGenerator.class
 org\jmath\jconvert\quantities\Area.class
 org\jmath\core\CharSet.class
 org\jmath\functions\AlgebraicFormulaGenerator.class
+org\jmath\core\Operators$FinalResult.class
 org\jmath\jconvert\quantities\Angle.class
 org\jmath\functions\AlgebraicFunction.class
 org\jmath\jconvert\quantities\Time.class
