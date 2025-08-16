@@ -1,5 +1,6 @@
 package org.jmath.jnum;
 
+import org.jmath.core.Fraction;
 import org.jmath.exceptions.DomainException;
 import org.jmath.exceptions.FunctionFormatException;
 import org.jmath.exceptions.KeyWordException;
@@ -22,7 +23,7 @@ public class JNum extends FunctionFactory {
             return super.eval(exp, angle);
         } else {
             if (super.checkForFunction(exp))
-            System.out.println("Function created successfully");
+             System.out.println("Function created successfully");
             if(super.checkAndCreateConstant(exp, angle))
                 System.out.println("Constant created successfully");
             return BigDecimal.valueOf(0);
@@ -37,4 +38,8 @@ public class JNum extends FunctionFactory {
     public String getFinalExpression() {
         return super.getFinalExpression();
     }
+    public Fraction getFraction(String v){
+        return new Fraction(v);
+    }
 }
+

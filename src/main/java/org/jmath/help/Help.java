@@ -1,16 +1,19 @@
-package org.jmath;
+package org.jmath.help;
 
 public interface Help {
     String help= """
-            # # # # # # # # # #  #                 #            #        # # # # # # # #   #           #
-                      #          # #             # #          #   #             #          #           #
-                #     #          #   #         #   #        # # # # #           #          # # # # # # #
-                #     #          #     #     #     #      #           #         #          #           #
-                  # #            #       # #       #    #               #       #          #           #
                         
-            Welcome to console calculator
+                   _ __  __       _   _    \s
+                  | |  \\/  |     | | | |   \s
+                  | | \\  / | __ _| |_| |__ \s
+              _   | | |\\/| |/ _` | __| '_ \\\s
+             | |__| | |  | | (_| | |_| | | |
+              \\____/|_|  |_|\\__,_|\\__|_| |_|
+                                           \s
+                                           \s
                         
-             This calculator is capable of doing almost all  type of calculations
+            Welcome to JMath
+ 
              #  Function that can be solved
              *  Arithmetic calculation(BODMAS),factorial,power,square root,cube root,percentage,mode
              *  Trigonometry function(Circular,Inverse,hyperbolic)

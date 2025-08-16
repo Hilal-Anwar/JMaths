@@ -27,12 +27,13 @@ public final class BigMath {
         if (arr[0].subtract(BigDecimal.valueOf(1)).remainder(BigDecimal.valueOf(4)).intValue() != 0
                 && arr[0].remainder(BigDecimal.valueOf(4)).intValue() != 0)
             sign = -1;
-        if (arr[0].remainder(BigDecimal.valueOf(2)).intValue() != 0)
-            return BigDecimal.valueOf(Math.cos((arr[1].round(MathContext.DECIMAL32)).multiply(DEGREE_TO_RADIAN).
-                    doubleValue())).multiply(BigDecimal.valueOf(sign));
-        else
-            return BigDecimal.valueOf(Math.sin((arr[1].round(MathContext.DECIMAL32)).multiply(DEGREE_TO_RADIAN).
-                    doubleValue())).multiply(BigDecimal.valueOf(sign));
+        return arr[0].remainder(BigDecimal.valueOf(2)).intValue() != 0 ?
+                BigDecimal.valueOf(Math.cos((arr[1].round(MathContext.DECIMAL32)).
+                        multiply(DEGREE_TO_RADIAN).
+                doubleValue())).multiply(BigDecimal.valueOf(sign)) :
+                BigDecimal.valueOf(Math.sin((arr[1].round(MathContext.DECIMAL32)).
+                        multiply(DEGREE_TO_RADIAN).
+                doubleValue())).multiply(BigDecimal.valueOf(sign));
     }
 
     public static BigDecimal sin(BigDecimal a) {
@@ -162,7 +163,7 @@ public final class BigMath {
         return cot(a, Angle.DEGREE);
     }
 
-    // Inverse Trigonometry
+    // Inverse MathFunctionSolver
     public static BigDecimal asin(BigDecimal n, Angle type) throws DomainException {
         if (n.doubleValue()<-1||n.doubleValue()>1)
             throw domainException;
@@ -418,7 +419,7 @@ public final class BigMath {
 
     public static BigDecimal toDegree(BigDecimal a, Angle type) {
         switch (type) {
-            case RADIAN: {
+            case RADIAN -> {
                 if (a.remainder(BigDecimal.valueOf(Math.PI)).round(MathContext.DECIMAL32).equals(new BigDecimal(Math.PI).round(MathContext.DECIMAL32)))
                     return (a.divideAndRemainder(new BigDecimal(Math.PI))[0].add(BigDecimal.ONE)).multiply(BigDecimal.valueOf(180));
                 else if (a.remainder(BigDecimal.valueOf(Math.PI / 2)).round(MathContext.DECIMAL32).equals(new BigDecimal(Math.PI / 2).
@@ -428,10 +429,12 @@ public final class BigMath {
                     return BigDecimal.ZERO;
                 else return a.multiply(RADIAN_TO_DEGREE);
             }
-            case GRADE:
+            case GRADE -> {
                 return a.multiply(GRADE_TO_DEGREE);
-            default:
+            }
+            default -> {
                 return a;
+            }
         }
     }
 

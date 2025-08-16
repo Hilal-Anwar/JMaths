@@ -1,6 +1,9 @@
 package org.jmath.jalgebra;
 
+import org.jmath.core.CharSet;
 import org.jmath.exceptions.DomainException;
+import org.jmath.exceptions.FunctionFormatException;
+import org.jmath.exceptions.KeyWordException;
 
 import java.util.Arrays;
 import java.util.Scanner;
@@ -11,6 +14,7 @@ public class Simplify {
     private boolean isEquation = false;
 
     public Simplify(String exp) {
+        CharSet.reset();
         if (exp.contains("=")) {
             LHS = exp.substring(0, exp.indexOf('='));
             RHS = exp.substring(exp.indexOf('=') + 1);
@@ -20,9 +24,10 @@ public class Simplify {
         }
     }
 
-    public Object[] solve() throws DomainException {
+    public Object[] solve() throws DomainException, FunctionFormatException, KeyWordException {
         if (isEquation()) {
-            var x = new PolynomialSolver(getLHS()).simplify();
+            var c = new PolynomialSolver(getLHS());
+            var x = c.simplify();
             var y = new PolynomialSolver(getRHS()).simplify();
             System.out.println("Equation       " + x + "   " + y);
             //Numerators and denominators of lhs and rhs
@@ -35,24 +40,41 @@ public class Simplify {
                 N2 = y.substring(0, y.indexOf('/'));
                 D2 = y.substring(y.indexOf('/') + 1);
             } else N2 = y;
-            x = !D2.isEmpty() ? "(" + N1 + ")" + "*" + "(" + D2 + ")" : N1;
-            y = !D1.isEmpty() ? "(" + N2 + ")" + "*" + "(" + D1 + ")" : N2;
-            var eqa = new PolynomialSolver("(" + new PolynomialSolver(x).simplify() + ")" +
-                    "-" + "(" + new PolynomialSolver(y).simplify() + ")");
-            eqa.simplify();
+            x = !D2.isEmpty() ?Product.multiply(N1,D2) : N1;
+            y = !D1.isEmpty() ?Product.multiply(N2,D1) : N2;
+            var eqa = new Polynomial(x+"+"+Product.multiply("-1",y));
             return new EquationSolver(eqa).solve_equation();
         } else {
-            return new String[]{new PolynomialSolver(getLHS()).simplify()};
-        }
-    }
-    public static void main(String[] args) throws DomainException {
-        while (true) {
-            var y = new Scanner(System.in);
-            var x = new Simplify(y.nextLine());
-            System.out.println(Arrays.toString(x.solve()));
+            var pol = new PolynomialSolver(getLHS());
+            String lhs=pol.simplify();
+            System.out.println(pol.getMemory()+"\t"+pol.getExponential_memory()+"\t"+pol.getMemory_2());
+            String N, D = "";
+            System.out.println(lhs);
+           if (lhs.contains("/")) {
+                N = lhs.substring(0, lhs.indexOf('/'));
+                D = lhs.substring(lhs.indexOf('/') + 1);
+               var xc = new Factorization(/*new PolynomialSolver(N).simplify()*/N).factors;
+               var xd = new Factorization(/*new PolynomialSolver(D).simplify()*/D).factors;
+               System.out.println("sadfdsafdsfds    "+xd+"   "+xc);
+               //System.out.println("Simple       "+new SimplestForm(xc, xd).getSimpleForm());
+               return new SimplifiedAlgebraicFraction[]{new SimplestForm(xc, xd).getSimpleForm()};
+            } else {
+              return new String[]{lhs};
+           }
         }
     }
 
+    public static void main(String[] args) {
+        try(var s=new Scanner(System.in)) {
+            while (true){
+                String ex=s.nextLine();
+                var sim=new Simplify(ex);
+                System.out.println(Arrays.toString(sim.solve()));
+            }
+        } catch (DomainException | FunctionFormatException | KeyWordException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public String getLHS() {
         return LHS;
     }

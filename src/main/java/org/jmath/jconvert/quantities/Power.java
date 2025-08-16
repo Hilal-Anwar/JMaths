@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Power {
+import org.jmath.jconvert.Conversion;
+
+public enum Power implements Conversion {
     British_thermal_unit_per_hour(0.29 ),foot_pound_per_second(1.35581795),
     horsepower(746),calorie_per_second(4.18400),watt(1.0);
     private final double v;

@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Time {
+import org.jmath.jconvert.Conversion;
+
+public enum Time implements Conversion {
     year(3.156E7),
     day(8.640E4),
     hour(3600.0),

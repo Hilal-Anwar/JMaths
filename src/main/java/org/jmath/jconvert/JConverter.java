@@ -1,25 +1,32 @@
 package org.jmath.jconvert;
 
-import org.jmath.jconvert.currency.CurrencyLoader;
+import org.jmath.jconvert.currency.CurrencyDataLoader;
+
 import org.jmath.jconvert.quantities.Currencies;
 import org.jmath.jconvert.quantities.Metric;
 import org.jmath.jconvert.quantities.Temperature;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Currency;
 import java.util.TreeMap;
 
 public class JConverter {
-    private final CurrencyLoader currencyLoader=new CurrencyLoader();
+    private final CurrencyDataLoader currencyLoader = new CurrencyDataLoader();
 
     public JConverter() {
-        new Thread(currencyLoader::reload).start();
+        new Thread(() -> {
+            try {
+                currencyLoader.reload();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
-    public TreeMap<String, String> getAllCurrency()
-    {
-        Currencies[]value= Currencies.values();
-        TreeMap <String,String> allCurrency=new TreeMap<>();
+    public TreeMap<String, String> getAllCurrency() {
+        Currencies[] value = Currencies.values();
+        TreeMap<String, String> allCurrency = new TreeMap<>();
         for (Currencies currencies : value) {
             try {
                 if (Currency.getAvailableCurrencies().contains(Currency.getInstance(currencies.toString()))) {
@@ -33,67 +40,36 @@ public class JConverter {
         }
         return allCurrency;
     }
-    public Object[] getAllCurrencyName(){
+
+    public Object[] getAllCurrencyName() {
         return getAllCurrency().keySet().toArray();
     }
-    public double convertCurrency(double amount, Currencies currencies1, Currencies currencies2){
-        double x=currencyLoader.getCurrencyValue(currencies1.getV());
-        double y=currencyLoader.getCurrencyValue(currencies2.getV());
-        return amount*y/x;
-    }
+
     public <T extends Enum<T>> double convertTo(double value, T unit1, T unit2) {
-        double x = 0, y = 0;
-        if (!(unit1 instanceof Temperature)) {
-            try {
-                x = (double) unit1.getDeclaringClass().getMethod("getV").invoke(unit1);
-                y = (double) unit2.getDeclaringClass().getMethod("getV").invoke(unit2);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-            return value * y/x;
+        double m1 = 0, m2 = 0, c1 = 0, c2 = 0;
+        try {
+            m1 = (double) unit1.getClass().getMethod("getV").invoke(unit1);
+            m2 = (double) unit2.getClass().getMethod("getV").invoke(unit2);
+
+            c1 = (double) unit1.getClass().getMethod("getC").invoke(unit1);
+            c2 = (double) unit2.getClass().getMethod("getC").invoke(unit2);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
         }
-        else return temperatureConversion(value, (Temperature) unit1, (Temperature) unit2);
+        return (value * m1 + c1 - c2) / m2;
     }
+
     public <T extends Enum<T>> double convertTo(double value, Metric u1, T unit1, Metric u2, T unit2) {
-        double x = 0, y = 0;
-        if (!(unit1 instanceof Temperature)) {
+        if (unit1 instanceof Currencies)
+            return convertTo(value, unit1, unit2);
+        return convertTo(value * u1.getV(), unit1, unit2) / u2.getV();
+    }
+    public void reloadCurrency() {
+        new Thread(() -> {
             try {
-                x = (double) unit1.getDeclaringClass().getMethod("getV").invoke(unit1);
-                y = (double) unit2.getDeclaringClass().getMethod("getV").invoke(unit2);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                e.printStackTrace();
+                currencyLoader.reload();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            return value * ( u2.getV()*y )/(u1.getV()* x);
-        } else return u2.getV()/u1.getV()*temperatureConversion(value, (Temperature) unit1, (Temperature) unit2);
-    }
-    private double temperatureConversion(double value, Temperature o1, Temperature o2) {
-        if(o1.equals(Temperature.degree_Celsius) && o2.equals(Temperature.kelvin))
-            return 273+value;
-        else if (o1.equals(Temperature.kelvin) && o2.equals(Temperature.degree_Celsius))
-            return value-273;
-        else if(o1.equals(Temperature.degree_Celsius) && o2.equals(Temperature.degree_Fahrenheit))
-            return (value)*9/5+32;
-        else if (o1.equals(Temperature.degree_Fahrenheit) && o2.equals(Temperature.degree_Celsius))
-            return (value-32)*5/9;
-        else if (o1.equals(Temperature.kelvin) && o2.equals(Temperature.degree_Fahrenheit))
-            return (value)*9/5+32+273;
-        else if  (o1.equals(Temperature.degree_Fahrenheit) && o2.equals(Temperature.kelvin))
-            return (value-273) * 9 / 5+32;
-        else if (o1.equals(Temperature.degree_Celsius) && o2.equals(Temperature.degree_Rankine))
-            return (value+273.15)*9/5;
-        else if (o1.equals(Temperature.degree_Rankine) && o2.equals(Temperature.degree_Celsius))
-            return (value*9/5)-273.15;
-        else if (o1.equals(Temperature.degree_Fahrenheit) && o2.equals(Temperature.degree_Rankine))
-            return (((value-32)*5/9)+273.15)*9/5;
-        else if (o1.equals(Temperature.degree_Rankine) && o2.equals(Temperature.degree_Fahrenheit))
-            return (((value*5/9)-273.15)*9/5)+32;
-        else if (o1.equals(Temperature.kelvin) && o2.equals(Temperature.degree_Rankine))
-            return value*1.8;
-        else if (o1.equals(Temperature.degree_Rankine) && o2.equals(Temperature.kelvin))
-            return value/1.8;
-        return value;
-    }
-    public void reloadCurrency(){
-        new Thread(currencyLoader::reload).start();
+        }).start();
     }
 }

@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Force {
+import org.jmath.jconvert.Conversion;
+
+public enum Force implements Conversion {
     newton(1.0),dyne(1e+5),pond(0.00980665),
     tonne_force(9806.65 ),kilogram_force(9.80665),
     poundal(0.138255), long_ton_force(10000),

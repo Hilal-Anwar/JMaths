@@ -6,7 +6,6 @@ import static java.lang.Math.*;
 
 public record Complex(double real, double imaginary) {
 
-
     public double argument() {
         return atan(imaginary / real);
     }
@@ -41,24 +40,8 @@ public record Complex(double real, double imaginary) {
         return new Complex(1, 0).division(this);
     }
 
-    public Complex power(int power) {
-        var p = new Complex(1, 0);
-        var k = this;
-        if (power >= 1)
-            while (power >= 1) {
-                if (power % 2 == 0) {
-                    k = k.product(k);
-                    power = power / 2;
-                } else {
-                    p = p.product(k);
-                    power--;
-                }
-            }
-        else {
-            return power(power * -1).inverse();
-        }
-        return p;
-    }
+
+
 
     public Complex root(double n) {
         double mode = pow(modulus(), 1 / n);
@@ -104,12 +87,6 @@ public record Complex(double real, double imaginary) {
 
     String check_for_sign(String s) {
         return s.replace("+-", "-").replace("++", "+");
-    }
-
-    public static void main(String[] args) {
-        Complex complex = new Complex(1,1);
-        System.out.println(complex.division(new Complex(1,-1)));
-
     }
 
 }

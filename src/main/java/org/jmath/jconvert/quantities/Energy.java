@@ -1,6 +1,8 @@
 package org.jmath.jconvert.quantities;
 
-public enum Energy {
+import org.jmath.jconvert.Conversion;
+
+public enum Energy implements Conversion {
     jule(1.0), erg(1e+7), electronvolt(1.6e-19), watt_hour(3.6*1000),
     calorie(4.2*1000),
     foot_poundal(0.042), foot_pound_force(1.4),  inch_pound_force(110.0 /1000),
