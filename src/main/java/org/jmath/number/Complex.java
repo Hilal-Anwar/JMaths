@@ -40,24 +40,8 @@ public record Complex(double real, double imaginary) {
         return new Complex(1, 0).division(this);
     }
 
-    public Complex power(int power) {
-        var p = new Complex(1, 0);
-        var k = this;
-        if (power >= 1)
-            while (power >= 1) {
-                if (power % 2 == 0) {
-                    k = k.product(k);
-                    power = power / 2;
-                } else {
-                    p = p.product(k);
-                    power--;
-                }
-            }
-        else {
-            return power(power * -1).inverse();
-        }
-        return p;
-    }
+
+
 
     public Complex root(double n) {
         double mode = pow(modulus(), 1 / n);

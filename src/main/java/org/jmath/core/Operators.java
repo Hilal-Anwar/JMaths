@@ -105,7 +105,8 @@ public record Operators(String exp, Map<Character, Constants> constants) {
         return final_value.toString();
     }
 
-    private Result divide(Result result, String[] split) throws DomainException {
+    private Result divide(Result result, String[] split) throws DomainException
+    {
         BigDecimal final_value = new BigDecimal("1");
         for (int i = 0; i < split.length; i++) {
             var x = split[i];
